@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: fleetpulse-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: fleetpulse
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fleetpulse"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: fleetpulse-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/fleetpulse
+      - SECRET_KEY=cyber_logistics_fleet_pulse_secret_key_2026_@_987654321
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: fleetpulse-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+
+  simulator:
+    build: ./backend
+    container_name: fleetpulse-simulator
+    environment:
+      - BACKEND_URL=http://backend:8000/api/telemetry
+    command: ["python", "-m", "app.simulator"]
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  pgdata:

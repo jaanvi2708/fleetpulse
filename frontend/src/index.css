@@ -1,0 +1,132 @@
+@import "leaflet/dist/leaflet.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-fp-bg text-stone-300 antialiased font-sans overflow-x-hidden;
+  }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: #1a1a18; }
+  ::-webkit-scrollbar-thumb { background: #3d3d39; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #555550; }
+}
+
+/* Main card style — clean, minimal */
+.cyber-card {
+  background: #222220;
+  border: 1px solid #333330;
+  border-radius: 10px;
+  transition: border-color 0.2s ease;
+}
+
+.cyber-card:hover {
+  border-color: #444440;
+}
+
+/* Sidebar specific */
+.sidebar-card {
+  background: #1e1e1c;
+  border: 1px solid #333330;
+  border-radius: 8px;
+}
+
+/* Stat cards */
+.stat-card {
+  background: #222220;
+  border: 1px solid #333330;
+  border-radius: 10px;
+  padding: 16px;
+  transition: border-color 0.2s ease;
+}
+
+.stat-card:hover {
+  border-color: #444440;
+}
+
+/* Active nav item style — subtle sage highlight */
+.nav-item-active {
+  background: rgba(124, 140, 110, 0.1);
+  border: 1px solid rgba(124, 140, 110, 0.2);
+  border-radius: 8px;
+  color: #9aab8a;
+}
+
+/* Leaflet overrides for warm dark theme */
+.leaflet-container {
+  background: #1a1a18 !important;
+  font-family: Inter, system-ui, sans-serif !important;
+}
+
+.leaflet-bar {
+  border: 1px solid #333330 !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
+}
+
+.leaflet-bar a {
+  background-color: #222220 !important;
+  color: #8a8a80 !important;
+  border-bottom: 1px solid #333330 !important;
+  width: 28px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+}
+
+.leaflet-bar a:hover {
+  background-color: #2a2a27 !important;
+  color: #d4d4cc !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(26, 26, 24, 0.95) !important;
+  color: #d4d4cc !important;
+  border: 1px solid #444440 !important;
+  border-radius: 8px !important;
+  backdrop-filter: blur(8px) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(26, 26, 24, 0.95) !important;
+}
+
+.leaflet-popup-close-button {
+  color: #6b6b64 !important;
+}
+
+/* Badge tags — muted */
+.badge-warning {
+  background: rgba(196, 149, 106, 0.12);
+  color: #c4956a;
+  border: 1px solid rgba(196, 149, 106, 0.25);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge-critical {
+  background: rgba(176, 112, 112, 0.12);
+  color: #b07070;
+  border: 1px solid rgba(176, 112, 112, 0.25);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Status legend dots (map bottom) */
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
