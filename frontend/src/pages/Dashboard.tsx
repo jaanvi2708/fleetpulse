@@ -470,7 +470,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
                 <Cpu className="w-3.5 h-3.5 text-fp-info" />
                 AI Insights
               </h4>
-              <button className="text-[10px] text-fp-accent font-medium flex items-center gap-1 hover:text-fp-accent-light">
+              <button onClick={() => setCurrentTab('insights')} className="text-[10px] text-fp-accent font-medium flex items-center gap-1 hover:text-fp-accent-light">
                 View All <ArrowRight className="w-3 h-3" />
               </button>
             </div>
@@ -498,13 +498,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
                     </div>
                   </div>
                 </div>
-                <button className="mt-2 w-full py-1.5 text-[10px] font-medium text-stone-400 bg-fp-bg border border-fp-border rounded-lg hover:border-fp-border-light transition-colors">
+                <button onClick={() => setCurrentTab('insights')} className="mt-2 w-full py-1.5 text-[10px] font-medium text-stone-400 bg-fp-bg border border-fp-border rounded-lg hover:border-fp-border-light transition-colors">
                   View Details
                 </button>
               </div>
 
               {/* Insight 2 - Route Optimization */}
-              <div className="p-3 rounded-lg border border-fp-border bg-fp-bg hover:border-fp-accent/20 transition-colors cursor-pointer flex items-center justify-between">
+              <div onClick={() => setCurrentTab('insights')} className="p-3 rounded-lg border border-fp-border bg-fp-bg hover:border-fp-accent/20 transition-colors cursor-pointer flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-7 h-7 rounded-lg bg-fp-success/10 border border-fp-success/15 flex items-center justify-center shrink-0">
                     <Navigation className="w-3.5 h-3.5 text-fp-success" />
@@ -518,7 +518,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
               </div>
 
               {/* Insight 3 - Maintenance */}
-              <div className="p-3 rounded-lg border border-fp-border bg-fp-bg hover:border-fp-warning/20 transition-colors cursor-pointer flex items-center justify-between">
+              <div onClick={() => setCurrentTab('insights')} className="p-3 rounded-lg border border-fp-border bg-fp-bg hover:border-fp-warning/20 transition-colors cursor-pointer flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-7 h-7 rounded-lg bg-fp-warning/10 border border-fp-warning/15 flex items-center justify-center shrink-0">
                     <Zap className="w-3.5 h-3.5 text-fp-warning" />

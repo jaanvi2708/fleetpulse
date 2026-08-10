@@ -157,6 +157,8 @@ export const Fleet: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [statusFilterOpen, setStatusFilterOpen] = useState(false);
+  const [selectedStatusTemp, setSelectedStatusTemp] = useState('All');
   const [sortField, setSortField] = useState<keyof Vehicle>('vehicle_number');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [detailedVehicle, setDetailedVehicle] = useState<Vehicle | null>(null);
@@ -292,20 +294,66 @@ export const Fleet: React.FC = () => {
                 className="w-full bg-fp-surface border border-fp-border rounded-lg py-2 pl-9 pr-4 text-[12px] text-stone-200 placeholder-stone-600 focus:outline-none focus:border-fp-accent transition-colors"
               />
             </div>
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal className="w-3.5 h-3.5 text-stone-500" />
-              <select
-                value={statusFilter}
-                onChange={e => setStatusFilter(e.target.value)}
-                className="bg-fp-surface border border-fp-border rounded-lg py-2 px-3 text-[12px] text-stone-300 focus:outline-none focus:border-fp-accent cursor-pointer"
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setSelectedStatusTemp(statusFilter);
+                  setStatusFilterOpen(!statusFilterOpen);
+                }}
+                className="bg-fp-surface border border-fp-border rounded-lg py-2 px-3 text-[12px] text-stone-300 hover:border-fp-accent/40 hover:text-stone-200 transition-colors flex items-center gap-2 select-none"
               >
-                <option value="All">All Statuses</option>
-                <option value="Moving">Moving</option>
-                <option value="Idle">Idle</option>
-                <option value="Stopped">Stopped</option>
-                <option value="Offline">Offline</option>
-                <option value="Delayed">Delayed</option>
-              </select>
+                <SlidersHorizontal className="w-3.5 h-3.5 text-stone-500" />
+                <span>Status: {statusFilter === 'All' ? 'All Statuses' : statusFilter}</span>
+              </button>
+
+              {statusFilterOpen && (
+                <>
+                  {/* Mobile backdrop to block page interaction and close menu when tapping outside */}
+                  <div 
+                    onClick={() => setStatusFilterOpen(false)} 
+                    className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs md:hidden"
+                  />
+                  
+                  {/* Dropdown panel */}
+                  <div className="fixed md:absolute md:top-full md:left-0 mt-2 z-50 w-[240px] md:w-[180px] bg-fp-sidebar border border-fp-border rounded-xl p-3 shadow-card animate-in fade-in zoom-in-95 duration-150
+                    left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:translate-x-0 md:translate-y-0 md:left-0 md:top-auto
+                  ">
+                    <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider mb-2.5 select-none border-b border-fp-border/40 pb-1">Filter Status</p>
+                    <div className="space-y-1.5">
+                      {['All', 'Moving', 'Idle', 'Stopped', 'Offline', 'Delayed'].map((status) => {
+                        const label = status === 'All' ? 'All Statuses' : status;
+                        const isSelected = selectedStatusTemp === status;
+                        return (
+                          <button
+                            key={status}
+                            onClick={() => setSelectedStatusTemp(status)}
+                            className={`w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg text-xs font-medium transition-all ${
+                              isSelected 
+                                ? 'bg-fp-accent/15 border border-fp-accent/25 text-fp-accent-light' 
+                                : 'text-stone-400 hover:bg-white/[0.02] hover:text-stone-200 border border-transparent'
+                            }`}
+                          >
+                            <span>{label}</span>
+                            {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-fp-accent" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-4 pt-2 border-t border-fp-border/40 flex justify-end">
+                      <button
+                        onClick={() => {
+                          setStatusFilter(selectedStatusTemp);
+                          setStatusFilterOpen(false);
+                        }}
+                        className="w-full md:w-auto px-4 py-1.5 bg-fp-accent hover:bg-fp-accent-light text-stone-950 font-bold text-xs rounded-lg transition-colors shadow-soft"
+                      >
+                        Done
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
             <span className="text-[11px] text-stone-500 sm:ml-auto">
               {filteredVehicles.length} of {vehicles.length} vehicles
