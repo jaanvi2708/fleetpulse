@@ -299,10 +299,30 @@ const enableMockInterceptor = () => {
       // GET /reports
       if (path.startsWith('/reports')) {
         return new Response(JSON.stringify({
-          completed_shipments: 124,
-          delayed_count: 8,
-          fuel_consumed: 3820,
-          efficiency_score: 94.2
+          total_telemetry_count: 2450,
+          vehicle_summaries: [
+            { vehicle_id: 1, vehicle_number: "FP-101", driver_name: "Marcus Vance", status: "Moving", log_count: 450, avg_speed: 72.5, avg_fuel_level: 84.2, alerts_count: 0 },
+            { vehicle_id: 2, vehicle_number: "FP-202", driver_name: "Elena Rostova", status: "Idle", log_count: 320, avg_speed: 0.0, avg_fuel_level: 48.9, alerts_count: 0 },
+            { vehicle_id: 3, vehicle_number: "FP-303", driver_name: "Jaxson Reed", status: "Moving", log_count: 280, avg_speed: 62.0, avg_fuel_level: 12.8, alerts_count: 1 },
+            { vehicle_id: 4, vehicle_number: "FP-404", driver_name: "Sarah Jenkins", status: "Offline", log_count: 150, avg_speed: 0.0, avg_fuel_level: 92.0, alerts_count: 1 },
+            { vehicle_id: 5, vehicle_number: "FP-505", driver_name: "Arjun Sharma", status: "Moving", log_count: 510, avg_speed: 98.6, avg_fuel_level: 67.5, alerts_count: 1 }
+          ],
+          recent_telemetry: Array.from({ length: 25 }, (_, i) => ({
+            id: i + 1,
+            timestamp: new Date(Date.now() - i * 12 * 60000).toISOString(),
+            vehicle_number: ["FP-101", "FP-202", "FP-303", "FP-404", "FP-505"][i % 5],
+            driver_name: ["Marcus Vance", "Elena Rostova", "Jaxson Reed", "Sarah Jenkins", "Arjun Sharma"][i % 5],
+            latitude: [37.7749, 34.0522, 40.7128, 41.8781, 19.0760][i % 5] + (i * 0.005),
+            longitude: [-122.4194, -118.2437, -74.0060, -87.6298, 72.8777][i % 5] + (i * 0.005),
+            speed: [72.5, 0.0, 62.0, 0.0, 98.6][i % 5],
+            fuel_level: [84.2, 48.9, 12.8, 92.0, 67.5][i % 5]
+          })),
+          alert_summary: [
+            { type: "Speeding", count: 1 },
+            { type: "Low Fuel", count: 1 },
+            { type: "Offline", count: 1 },
+            { type: "Route Deviation", count: 0 }
+          ]
         }), { status: 200 });
       }
 
