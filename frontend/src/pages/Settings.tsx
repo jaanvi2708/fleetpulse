@@ -96,15 +96,59 @@ const Sel: React.FC<{
   value: string;
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
-}> = ({ value, onChange, options }) => (
-  <select
-    value={value}
-    onChange={(e) => onChange(e.target.value)}
-    className="bg-fp-surface border border-fp-border rounded-md px-2.5 py-1.5 text-xs text-stone-300 focus:outline-none focus:border-fp-accent transition-colors cursor-pointer"
-  >
-    {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-  </select>
-);
+}> = ({ value, onChange, options }) => {
+  const [open, setOpen] = useState(false);
+  const activeLabel = options.find((o) => o.value === value)?.label || value;
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="bg-fp-surface border border-fp-border rounded-md px-2.5 py-1.5 text-xs text-stone-300 hover:border-fp-accent/40 hover:text-stone-200 transition-colors cursor-pointer flex items-center gap-1.5 select-none"
+      >
+        <span>{activeLabel}</span>
+        <span className="text-[9px] text-stone-600">▼</span>
+      </button>
+
+      {open && (
+        <>
+          {/* Mobile overlay backdrop */}
+          <div 
+            onClick={() => setOpen(false)} 
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs md:hidden"
+          />
+          {/* Options dropdown */}
+          <div className="fixed md:absolute md:top-full md:right-0 mt-1 z-50 w-[200px] md:w-[150px] bg-fp-sidebar border border-fp-border rounded-lg p-2 shadow-card animate-in fade-in zoom-in-95 duration-100
+            left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:translate-x-0 md:translate-y-0
+          ">
+            <div className="space-y-1">
+              {options.map((o) => {
+                const isSelected = o.value === value;
+                return (
+                  <button
+                    key={o.value}
+                    onClick={() => {
+                      onChange(o.value);
+                      setOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between py-1.5 px-2 rounded text-left text-xs transition-all ${
+                      isSelected 
+                        ? 'bg-fp-accent/15 text-fp-accent-light font-medium' 
+                        : 'text-stone-400 hover:bg-white/[0.02] hover:text-stone-200'
+                    }`}
+                  >
+                    <span>{o.label}</span>
+                    {isSelected && <span className="w-1 h-1 rounded-full bg-fp-accent" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
 
 /* ─── STAT PILL ───────────────────────────────────────── */
 const StatPill: React.FC<{ icon: React.ReactNode; label: string; value: string | number; color?: string }> = ({

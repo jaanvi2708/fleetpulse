@@ -26,7 +26,11 @@ export const Reports: React.FC = () => {
   const [reportsData, setReportsData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVehicle, setSelectedVehicle] = useState<string>('all');
+  const [vehicleSelectOpen, setVehicleSelectOpen] = useState(false);
+  const [tempVehicle, setTempVehicle] = useState<string>('all');
   const [selectedTimeframe, setSelectedTimeframe] = useState<string>('today');
+  const [timeframeSelectOpen, setTimeframeSelectOpen] = useState(false);
+  const [tempTimeframe, setTempTimeframe] = useState<string>('today');
   
   // Simulated report compiler states
   const [compiling, setCompiling] = useState(false);
@@ -258,32 +262,140 @@ export const Reports: React.FC = () => {
             </h3>
 
             {/* Vehicle Selector */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 relative">
               <label className="text-[10px] text-stone-500 font-bold uppercase select-none">Vehicle Manifest</label>
-              <select 
-                value={selectedVehicle}
-                onChange={(e) => setSelectedVehicle(e.target.value)}
-                className="w-full bg-fp-surface border border-fp-border rounded-lg px-3 py-2 text-xs font-medium text-stone-300 focus:outline-none focus:border-fp-accent cursor-pointer"
+              <button
+                onClick={() => {
+                  setTempVehicle(selectedVehicle);
+                  setVehicleSelectOpen(!vehicleSelectOpen);
+                  setTimeframeSelectOpen(false);
+                }}
+                className="w-full bg-fp-surface border border-fp-border rounded-lg px-3 py-2 text-xs font-medium text-stone-300 focus:outline-none focus:border-fp-accent cursor-pointer flex items-center justify-between select-none"
               >
-                <option value="all">All Fleet Vehicles</option>
-                {reportsData.vehicle_summaries.map((v: any) => (
-                  <option key={v.vehicle_id} value={v.vehicle_number}>{v.vehicle_number} - {v.driver_name}</option>
-                ))}
-              </select>
+                <span>{selectedVehicle === 'all' ? 'All Fleet Vehicles' : (reportsData.vehicle_summaries.find((v: any) => v.vehicle_number === selectedVehicle) ? `${reportsData.vehicle_summaries.find((v: any) => v.vehicle_number === selectedVehicle).vehicle_number} - ${reportsData.vehicle_summaries.find((v: any) => v.vehicle_number === selectedVehicle).driver_name}` : selectedVehicle)}</span>
+                <span className="text-[10px] text-stone-600">▼</span>
+              </button>
+
+              {vehicleSelectOpen && (
+                <>
+                  <div 
+                    onClick={() => setVehicleSelectOpen(false)} 
+                    className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs md:hidden"
+                  />
+                  <div className="fixed md:absolute md:top-full md:left-0 mt-2 z-50 w-[280px] bg-fp-sidebar border border-fp-border rounded-xl p-3 shadow-card animate-in fade-in zoom-in-95 duration-150
+                    left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:translate-x-0 md:translate-y-0
+                  ">
+                    <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider mb-2.5 select-none border-b border-fp-border/40 pb-1">Select Vehicle</p>
+                    <div className="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
+                      <button
+                        onClick={() => setTempVehicle('all')}
+                        className={`w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg text-xs font-medium transition-all text-left ${
+                          tempVehicle === 'all' 
+                            ? 'bg-fp-accent/15 border border-fp-accent/25 text-fp-accent-light' 
+                            : 'text-stone-400 hover:bg-white/[0.02] hover:text-stone-200 border border-transparent'
+                        }`}
+                      >
+                        <span>All Fleet Vehicles</span>
+                        {tempVehicle === 'all' && <span className="w-1.5 h-1.5 rounded-full bg-fp-accent" />}
+                      </button>
+                      {reportsData.vehicle_summaries.map((v: any) => {
+                        const isSelected = tempVehicle === v.vehicle_number;
+                        return (
+                          <button
+                            key={v.vehicle_id}
+                            onClick={() => setTempVehicle(v.vehicle_number)}
+                            className={`w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg text-xs font-medium transition-all text-left ${
+                              isSelected 
+                                ? 'bg-fp-accent/15 border border-fp-accent/25 text-fp-accent-light' 
+                                : 'text-stone-400 hover:bg-white/[0.02] hover:text-stone-200 border border-transparent'
+                            }`}
+                          >
+                            <span className="truncate">{v.vehicle_number} - {v.driver_name}</span>
+                            {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-fp-accent shrink-0 ml-1" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-4 pt-2 border-t border-fp-border/40 flex justify-end">
+                      <button
+                        onClick={() => {
+                          setSelectedVehicle(tempVehicle);
+                          setVehicleSelectOpen(false);
+                        }}
+                        className="w-full px-4 py-1.5 bg-fp-accent hover:bg-fp-accent-light text-stone-950 font-bold text-xs rounded-lg transition-colors shadow-soft"
+                      >
+                        Done
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Timeframe Selector */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 relative">
               <label className="text-[10px] text-stone-500 font-bold uppercase select-none">Date Range Frame</label>
-              <select 
-                value={selectedTimeframe}
-                onChange={(e) => setSelectedTimeframe(e.target.value)}
-                className="w-full bg-fp-surface border border-fp-border rounded-lg px-3 py-2 text-xs font-medium text-stone-300 focus:outline-none focus:border-fp-accent cursor-pointer"
+              <button
+                onClick={() => {
+                  setTempTimeframe(selectedTimeframe);
+                  setTimeframeSelectOpen(!timeframeSelectOpen);
+                  setVehicleSelectOpen(false);
+                }}
+                className="w-full bg-fp-surface border border-fp-border rounded-lg px-3 py-2 text-xs font-medium text-stone-300 focus:outline-none focus:border-fp-accent cursor-pointer flex items-center justify-between select-none"
               >
-                <option value="today">Today (Real-time)</option>
-                <option value="week">Last 7 Days (Telemetry Log)</option>
-                <option value="month">Last 30 Days (Full Cycle)</option>
-              </select>
+                <span>{selectedTimeframe === 'today' ? 'Today (Real-time)' : selectedTimeframe === 'week' ? 'Last 7 Days (Telemetry Log)' : 'Last 30 Days (Full Cycle)'}</span>
+                <span className="text-[10px] text-stone-600">▼</span>
+              </button>
+
+              {timeframeSelectOpen && (
+                <>
+                  <div 
+                    onClick={() => setTimeframeSelectOpen(false)} 
+                    className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs md:hidden"
+                  />
+                  <div className="fixed md:absolute md:top-full md:left-0 mt-2 z-50 w-[240px] bg-fp-sidebar border border-fp-border rounded-xl p-3 shadow-card animate-in fade-in zoom-in-95 duration-150
+                    left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:translate-x-0 md:translate-y-0
+                  ">
+                    <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider mb-2.5 select-none border-b border-fp-border/40 pb-1">Date Range</p>
+                    <div className="space-y-1.5">
+                      {[
+                        { val: 'today', label: 'Today (Real-time)' },
+                        { val: 'week', label: 'Last 7 Days (Telemetry Log)' },
+                        { val: 'month', label: 'Last 30 Days (Full Cycle)' }
+                      ].map((item) => {
+                        const isSelected = tempTimeframe === item.val;
+                        return (
+                          <button
+                            key={item.val}
+                            onClick={() => setTempTimeframe(item.val)}
+                            className={`w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg text-xs font-medium transition-all text-left ${
+                              isSelected 
+                                ? 'bg-fp-accent/15 border border-fp-accent/25 text-fp-accent-light' 
+                                : 'text-stone-400 hover:bg-white/[0.02] hover:text-stone-200 border border-transparent'
+                            }`}
+                          >
+                            <span>{item.label}</span>
+                            {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-fp-accent" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-4 pt-2 border-t border-fp-border/40 flex justify-end">
+                      <button
+                        onClick={() => {
+                          setSelectedTimeframe(tempTimeframe);
+                          setTimeframeSelectOpen(false);
+                        }}
+                        className="w-full px-4 py-1.5 bg-fp-accent hover:bg-fp-accent-light text-stone-950 font-bold text-xs rounded-lg transition-colors shadow-soft"
+                      >
+                        Done
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Format Selector */}

@@ -10,7 +10,11 @@ export const Alerts: React.FC = () => {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [severityFilter, setSeverityFilter] = useState('All');
+  const [severityFilterOpen, setSeverityFilterOpen] = useState(false);
+  const [selectedSeverityTemp, setSelectedSeverityTemp] = useState('All');
   const [statusFilter, setStatusFilter] = useState('Unresolved');
+  const [statusFilterOpen, setStatusFilterOpen] = useState(false);
+  const [selectedStatusTemp, setSelectedStatusTemp] = useState('Unresolved');
   const [resolvingId, setResolvingId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -90,27 +94,130 @@ export const Alerts: React.FC = () => {
           />
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto shrink-0 justify-end">
-          <select
-            value={severityFilter}
-            onChange={(e) => setSeverityFilter(e.target.value)}
-            className="bg-fp-bg border border-fp-border rounded-lg py-1.5 px-3 text-xs text-stone-400 focus:outline-none focus:border-fp-accent/50"
-          >
-            <option value="All">All Severities</option>
-            <option value="Critical">Critical</option>
-            <option value="Warning">Warning</option>
-            <option value="Info">Info</option>
-          </select>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto shrink-0 justify-end">
+          
+          {/* Severity Filter Custom Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setSelectedSeverityTemp(severityFilter);
+                setSeverityFilterOpen(!severityFilterOpen);
+                setStatusFilterOpen(false);
+              }}
+              className="w-full sm:w-auto bg-fp-bg border border-fp-border rounded-lg py-2 px-3 text-xs text-stone-300 hover:border-fp-accent/40 hover:text-stone-200 transition-colors flex items-center justify-between sm:justify-start gap-2 select-none"
+            >
+              <span>Severity: {severityFilter === 'All' ? 'All' : severityFilter}</span>
+              <span className="text-[10px] text-stone-600">▼</span>
+            </button>
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-fp-bg border border-fp-border rounded-lg py-1.5 px-3 text-xs text-stone-400 focus:outline-none focus:border-fp-accent/50"
-          >
-            <option value="All">All States</option>
-            <option value="Unresolved">Unresolved</option>
-            <option value="Resolved">Resolved</option>
-          </select>
+            {severityFilterOpen && (
+              <>
+                <div 
+                  onClick={() => setSeverityFilterOpen(false)} 
+                  className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs md:hidden"
+                />
+                <div className="fixed md:absolute md:top-full md:right-0 mt-2 z-50 w-[240px] md:w-[180px] bg-fp-sidebar border border-fp-border rounded-xl p-3 shadow-card animate-in fade-in zoom-in-95 duration-150
+                  left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:translate-x-0 md:translate-y-0
+                ">
+                  <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider mb-2.5 select-none border-b border-fp-border/40 pb-1">Filter Severity</p>
+                  <div className="space-y-1.5">
+                    {['All', 'Critical', 'Warning', 'Info'].map((severity) => {
+                      const label = severity === 'All' ? 'All Severities' : severity;
+                      const isSelected = selectedSeverityTemp === severity;
+                      return (
+                        <button
+                          key={severity}
+                          onClick={() => setSelectedSeverityTemp(severity)}
+                          className={`w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg text-xs font-medium transition-all ${
+                            isSelected 
+                              ? 'bg-fp-accent/15 border border-fp-accent/25 text-fp-accent-light' 
+                              : 'text-stone-400 hover:bg-white/[0.02] hover:text-stone-200 border border-transparent'
+                          }`}
+                        >
+                          <span>{label}</span>
+                          {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-fp-accent" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-4 pt-2 border-t border-fp-border/40 flex justify-end">
+                    <button
+                      onClick={() => {
+                        setSeverityFilter(selectedSeverityTemp);
+                        setSeverityFilterOpen(false);
+                      }}
+                      className="w-full md:w-auto px-4 py-1.5 bg-fp-accent hover:bg-fp-accent-light text-stone-950 font-bold text-xs rounded-lg transition-colors shadow-soft"
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Status Filter Custom Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setSelectedStatusTemp(statusFilter);
+                setStatusFilterOpen(!statusFilterOpen);
+                setSeverityFilterOpen(false);
+              }}
+              className="w-full sm:w-auto bg-fp-bg border border-fp-border rounded-lg py-2 px-3 text-xs text-stone-300 hover:border-fp-accent/40 hover:text-stone-200 transition-colors flex items-center justify-between sm:justify-start gap-2 select-none"
+            >
+              <span>State: {statusFilter === 'All' ? 'All' : statusFilter}</span>
+              <span className="text-[10px] text-stone-600">▼</span>
+            </button>
+
+            {statusFilterOpen && (
+              <>
+                <div 
+                  onClick={() => setStatusFilterOpen(false)} 
+                  className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs md:hidden"
+                />
+                <div className="fixed md:absolute md:top-full md:right-0 mt-2 z-50 w-[240px] md:w-[180px] bg-fp-sidebar border border-fp-border rounded-xl p-3 shadow-card animate-in fade-in zoom-in-95 duration-150
+                  left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:translate-x-0 md:translate-y-0
+                ">
+                  <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider mb-2.5 select-none border-b border-fp-border/40 pb-1">Filter State</p>
+                  <div className="space-y-1.5">
+                    {['All', 'Unresolved', 'Resolved'].map((status) => {
+                      const label = status === 'All' ? 'All States' : status;
+                      const isSelected = selectedStatusTemp === status;
+                      return (
+                        <button
+                          key={status}
+                          onClick={() => setSelectedStatusTemp(status)}
+                          className={`w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg text-xs font-medium transition-all ${
+                            isSelected 
+                              ? 'bg-fp-accent/15 border border-fp-accent/25 text-fp-accent-light' 
+                              : 'text-stone-400 hover:bg-white/[0.02] hover:text-stone-200 border border-transparent'
+                          }`}
+                        >
+                          <span>{label}</span>
+                          {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-fp-accent" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-4 pt-2 border-t border-fp-border/40 flex justify-end">
+                    <button
+                      onClick={() => {
+                        setStatusFilter(selectedStatusTemp);
+                        setStatusFilterOpen(false);
+                      }}
+                      className="w-full md:w-auto px-4 py-1.5 bg-fp-accent hover:bg-fp-accent-light text-stone-950 font-bold text-xs rounded-lg transition-colors shadow-soft"
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
         </div>
       </div>
 
