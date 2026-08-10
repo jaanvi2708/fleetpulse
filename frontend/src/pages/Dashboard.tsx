@@ -183,7 +183,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
       </div>
 
       {/* ── KPI STAT CARDS ── */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <StatCard 
           title="Active Vehicles" 
           value={stats.active_vehicles ?? 128}
@@ -222,10 +222,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
       </div>
 
       {/* ── MAIN 2/3 + 1/3 LAYOUT ── */}
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
         {/* LEFT COLUMN */}
-        <div className="col-span-2 flex flex-col gap-5">
+        <div className="lg:col-span-2 flex flex-col gap-5">
           
           {/* MAP */}
           <div className="cyber-card p-4">
@@ -272,7 +272,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
           </div>
 
           {/* BOTTOM CHARTS ROW */}
-          <div className="grid grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
             {/* Delivery Performance */}
             <div className="cyber-card p-4">

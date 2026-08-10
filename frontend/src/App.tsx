@@ -13,7 +13,7 @@ import { Alerts } from './pages/Alerts';
 import { AIInsights } from './pages/AIInsights';
 import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
-import { X, ShieldAlert, AlertTriangle, Info } from 'lucide-react';
+import { X, ShieldAlert, AlertTriangle, Info, Menu, Radio } from 'lucide-react';
 
 interface Toast {
   id: string;
@@ -26,6 +26,7 @@ export const App: React.FC = () => {
   const [authView, setAuthView] = useState<'login' | 'register'>('login');
   const [currentTab, setCurrentTab] = useState<string>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   // Toast dispatcher for WebSocket alerts
@@ -81,10 +82,45 @@ export const App: React.FC = () => {
     );
   }
 
+  const tabTitleMap: Record<string, string> = {
+    dashboard: 'Dashboard',
+    fleet: 'Fleet Status',
+    shipments: 'Shipments',
+    map: 'Live Map',
+    analytics: 'Analytics',
+    alerts: 'Alerts',
+    insights: 'AI Insights',
+    reports: 'Reports',
+    settings: 'Settings'
+  };
+  const activeTitle = tabTitleMap[currentTab] || currentTab;
+
   // 2. Authenticated Dashboard Layout
   return (
-    <div className="min-h-screen bg-fp-bg text-stone-300 flex font-sans">
+    <div className="min-h-screen bg-fp-bg text-stone-300 flex flex-col md:flex-row font-sans">
       
+      {/* Mobile Top Header Bar */}
+      <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-fp-sidebar border-b border-fp-border z-30 flex items-center justify-between px-4">
+        <button
+          onClick={() => setMobileMenuOpen(true)}
+          className="p-1.5 rounded-lg text-stone-500 hover:text-stone-300 hover:bg-white/[0.03] transition-colors"
+          title="Open Menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+        
+        <div className="flex items-center gap-2 select-none">
+          <Radio className="w-4 h-4 text-fp-accent animate-pulse" />
+          <span className="font-bold text-stone-200 text-sm tracking-wide">FleetPulse</span>
+          <span className="text-[9px] bg-fp-accent/15 border border-fp-accent/25 text-fp-accent px-1.5 py-0.5 rounded uppercase font-semibold">
+            {activeTitle}
+          </span>
+        </div>
+
+        {/* Space balancing block */}
+        <div className="w-8"></div>
+      </header>
+
       {/* Sidebar Navigation */}
       <Navbar 
         currentTab={currentTab} 
@@ -92,10 +128,12 @@ export const App: React.FC = () => {
         wsConnected={wsConnected} 
         isCollapsed={sidebarCollapsed}
         setIsCollapsed={setSidebarCollapsed}
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
       />
       
       {/* Main Command Workspace */}
-      <main className={`flex-1 min-w-0 transition-all duration-300 ${sidebarCollapsed ? 'pl-[88px]' : 'pl-[212px]'} py-6 pr-6 pl-6 min-h-screen`}>
+      <main className={`flex-1 min-w-0 transition-all duration-300 ${sidebarCollapsed ? 'md:pl-[88px]' : 'md:pl-[212px]'} px-4 md:px-6 pt-20 md:pt-6 pb-6 min-h-screen`}>
         <div className="max-w-[1400px] mx-auto">
           {renderTabContent()}
         </div>

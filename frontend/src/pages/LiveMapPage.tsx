@@ -32,7 +32,7 @@ export const LiveMapPage: React.FC = () => {
         </div>
         
         {/* Layer Controls HUD */}
-        <div className="flex items-center gap-4 bg-fp-card/80 p-2.5 px-4 border border-fp-border rounded-xl text-xs select-none">
+        <div className="flex flex-wrap items-center gap-3 md:gap-4 bg-fp-card/80 p-2.5 px-4 border border-fp-border rounded-xl text-xs select-none w-full sm:w-auto justify-start sm:justify-end">
           <span className="text-stone-400 font-bold flex items-center gap-1.5 mr-2">
             <Layers className="w-3.5 h-3.5 text-fp-accent" />
             Layer Controls:

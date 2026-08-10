@@ -275,13 +275,13 @@ export const Fleet: React.FC = () => {
         ))}
       </div>
 
-      <div className="flex gap-5">
+      <div className="flex flex-col lg:flex-row gap-5">
 
         {/* ── LEFT: Vehicle Table ── */}
         <div className="flex-1 min-w-0 space-y-4">
 
           {/* Controls */}
-          <div className="flex gap-3 items-center cyber-card px-4 py-3">
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center cyber-card px-4 py-3">
             <div className="relative flex-1 max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-500" />
               <input
@@ -307,7 +307,7 @@ export const Fleet: React.FC = () => {
                 <option value="Delayed">Delayed</option>
               </select>
             </div>
-            <span className="text-[11px] text-stone-500 ml-auto">
+            <span className="text-[11px] text-stone-500 sm:ml-auto">
               {filteredVehicles.length} of {vehicles.length} vehicles
             </span>
           </div>
@@ -395,7 +395,7 @@ export const Fleet: React.FC = () => {
 
         {/* ── RIGHT: Detail Side Panel ── */}
         {selectedVehicleId !== null && (
-          <div className="w-[360px] shrink-0 flex flex-col gap-0 animate-in slide-in-from-right duration-300">
+          <div className="w-full lg:w-[360px] shrink-0 flex flex-col gap-0 animate-in slide-in-from-right duration-300">
             <div className="cyber-card overflow-hidden flex flex-col h-full">
 
               {/* Panel Header */}
