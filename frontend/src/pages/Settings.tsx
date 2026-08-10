@@ -218,7 +218,6 @@ export const Settings: React.FC = () => {
   const [saved,           setSaved]           = useState(false);
 
   /* ── appearance (persisted) ── */
-  const [accentColor, setAccentColor] = useState(() => lsGet('accentColor', 'blue'));
   const [mapStyle,    setMapStyle]    = useState(() => lsGet('mapStyle', 'dark'));
   const [compactMode, setCompactMode] = useState(() => lsBool('compactMode', false));
   const [animations,  setAnimations]  = useState(() => lsBool('animations', true));
@@ -240,7 +239,6 @@ export const Settings: React.FC = () => {
   const [debugMode,     setDebugMode]     = useState(() => lsBool('debugMode', false));
 
   /* persist on change */
-  useEffect(() => { lsSet('accentColor', accentColor); }, [accentColor]);
   useEffect(() => { lsSet('mapStyle', mapStyle); }, [mapStyle]);
   useEffect(() => { lsSetBool('compactMode', compactMode); }, [compactMode]);
   useEffect(() => { lsSetBool('animations', animations); }, [animations]);
@@ -448,15 +446,6 @@ export const Settings: React.FC = () => {
       {/* ─── APPEARANCE ─── */}
       <div className="cyber-card p-6">
         <SectionHeader icon={<Monitor className="w-4 h-4" />} title="Appearance" subtitle="Customize how the dashboard looks and feels" />
-
-        <SettingRow label="Accent Color" description="Primary highlight color used across the UI">
-          <Sel value={accentColor} onChange={setAccentColor} options={[
-            { value: 'blue',   label: '🌿 Muted Sage'  },
-            { value: 'green',  label: '🔵 Steel Blue' },
-            { value: 'purple', label: '🟤 Warm Taupe' },
-            { value: 'orange', label: '🟠 Muted Terracotta' },
-          ]} />
-        </SettingRow>
 
         <SettingRow label="Map Style" description="Base tile style for the live tracking map">
           <Sel value={mapStyle} onChange={setMapStyle} options={[
