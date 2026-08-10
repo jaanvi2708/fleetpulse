@@ -100,7 +100,7 @@ export const App: React.FC = () => {
     <div className="min-h-screen bg-fp-bg text-stone-300 flex flex-col md:flex-row font-sans">
       
       {/* Mobile Top Header Bar */}
-      <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-fp-sidebar border-b border-fp-border z-30 flex items-center justify-between px-4">
+      <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-fp-sidebar border-b border-fp-border z-[9980] flex items-center justify-between px-4">
         <button
           onClick={() => setMobileMenuOpen(true)}
           className="p-1.5 rounded-lg text-stone-500 hover:text-stone-300 hover:bg-white/[0.03] transition-colors"

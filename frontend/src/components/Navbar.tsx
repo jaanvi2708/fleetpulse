@@ -56,11 +56,11 @@ export const Navbar: React.FC<NavbarProps> = ({
       {isOpen && (
         <div 
           onClick={onClose}
-          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-40 transition-opacity duration-300"
+          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-[9990] transition-opacity duration-300"
         />
       )}
 
-      <aside className={`bg-fp-sidebar border-r border-fp-border flex flex-col h-screen fixed left-0 top-0 z-50 transition-all duration-300 ${isOpen ? 'w-[196px] translate-x-0' : '-translate-x-full'} md:translate-x-0 ${isCollapsed ? 'md:w-[72px]' : 'md:w-[196px]'}`}>
+      <aside className={`bg-fp-sidebar border-r border-fp-border flex flex-col h-screen fixed left-0 top-0 transition-all duration-300 ${isOpen ? 'w-[196px] translate-x-0 z-[9995]' : '-translate-x-full z-[9995]'} md:translate-x-0 md:z-40 ${isCollapsed ? 'md:w-[72px]' : 'md:w-[196px]'}`}>
         
         {/* Collapse Toggle */}
         <button 
