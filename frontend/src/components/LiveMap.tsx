@@ -118,7 +118,7 @@ export const LiveMap: React.FC<LiveMapProps> = ({
   center = [37.0902, -95.7129]
 }) => {
   return (
-    <div className="relative rounded-lg border border-fp-border overflow-hidden w-full" style={{ height }}>
+    <div className="relative rounded-lg border border-fp-border overflow-hidden w-full z-0" style={{ height }}>
       <MapContainer 
         center={center} 
         zoom={zoom} 

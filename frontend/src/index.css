@@ -59,6 +59,7 @@
 .leaflet-container {
   background: #1a1a18 !important;
   font-family: Inter, system-ui, sans-serif !important;
+  z-index: 0 !important;
 }
 
 .leaflet-bar {
