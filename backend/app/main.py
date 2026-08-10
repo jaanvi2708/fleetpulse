@@ -488,6 +488,76 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
         "delayed_shipments": delayed_count
     }
 
+@app.get("/api/reports")
+def get_reports_data(db: Session = Depends(get_db)):
+    # 1. Total telemetry count
+    total_telemetry_count = db.query(models.TelemetryHistory).count()
+    
+    # 2. Vehicle summaries
+    vehicles = db.query(models.Vehicle).all()
+    vehicle_summaries = []
+    
+    for v in vehicles:
+        # Get historical points for this vehicle
+        v_history = db.query(models.TelemetryHistory).filter(models.TelemetryHistory.vehicle_id == v.id).all()
+        log_count = len(v_history)
+        
+        # Calculate averages
+        avg_speed = round(sum(p.speed for p in v_history) / log_count, 1) if log_count > 0 else round(v.speed, 1)
+        avg_fuel_level = round(sum(p.fuel_level for p in v_history) / log_count, 1) if log_count > 0 else round(v.fuel_level, 1)
+        
+        # Count alerts
+        alerts_count = db.query(models.Alert).filter(models.Alert.vehicle_id == v.id).count()
+        
+        vehicle_summaries.append({
+            "vehicle_id": v.id,
+            "vehicle_number": v.vehicle_number,
+            "driver_name": v.driver_name,
+            "status": v.status,
+            "log_count": log_count,
+            "avg_speed": avg_speed,
+            "avg_fuel_level": avg_fuel_level,
+            "alerts_count": alerts_count
+        })
+        
+    # 3. Recent telemetry (last 100 log items, ordered by timestamp desc)
+    recent_history = db.query(models.TelemetryHistory).order_by(models.TelemetryHistory.timestamp.desc()).limit(100).all()
+    recent_telemetry = []
+    
+    # Map vehicle details for easy lookup
+    vehicle_map = {v.id: v for v in vehicles}
+    
+    for h in recent_history:
+        veh = vehicle_map.get(h.vehicle_id)
+        recent_telemetry.append({
+            "id": h.id,
+            "timestamp": h.timestamp.isoformat(),
+            "vehicle_number": veh.vehicle_number if veh else "Unknown",
+            "driver_name": veh.driver_name if veh else "Unknown",
+            "latitude": h.latitude,
+            "longitude": h.longitude,
+            "speed": h.speed,
+            "fuel_level": h.fuel_level
+        })
+        
+    # 4. Alert summary statistics
+    # Group alerts by alert_type
+    alert_types = ["Speeding", "Low Fuel", "Offline", "Route Deviation"]
+    alert_summary = []
+    for atype in alert_types:
+        count = db.query(models.Alert).filter(models.Alert.alert_type == atype).count()
+        alert_summary.append({
+            "type": atype,
+            "count": count
+        })
+        
+    return {
+        "total_telemetry_count": total_telemetry_count,
+        "vehicle_summaries": vehicle_summaries,
+        "recent_telemetry": recent_telemetry,
+        "alert_summary": alert_summary
+    }
+
 @app.get("/api/analytics")
 def get_analytics_data(db: Session = Depends(get_db)):
     # Simulating robust analytics graphs data based on active DB contents

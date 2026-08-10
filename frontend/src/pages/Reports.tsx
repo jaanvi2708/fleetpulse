@@ -583,36 +583,68 @@ export const Reports: React.FC = () => {
 
       {/* ── ROW: REAL-TIME LEDGER LOGS ── */}
       <div className="cyber-card p-5 space-y-4">
-        <h3 className="text-xs font-bold text-stone-400 uppercase tracking-widest flex items-center gap-2 select-none">
-          <Clock className="w-4 h-4 text-fp-info" />
-          Raw Ledger Index Events (Last 100 Transactions)
-        </h3>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 select-none border-b border-fp-border/40 pb-2">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-fp-info animate-pulse" />
+            <h3 className="text-xs font-bold text-stone-400 uppercase tracking-widest">
+              Raw Ledger Index Events (Last 100 Transactions)
+            </h3>
+          </div>
+          <span className="text-[10px] text-fp-accent bg-fp-accent/15 border border-fp-accent/20 px-2 py-0.5 rounded font-black tracking-wide">
+            LIVE TELEMETRY STREAM
+          </span>
+        </div>
 
-        <div className="overflow-y-auto max-h-[300px] border border-fp-border rounded-lg">
-          <table className="w-full text-[11px] font-medium text-stone-300">
+        <div className="overflow-x-auto overflow-y-auto max-h-[350px] border border-fp-border rounded-lg">
+          <table className="w-full text-[11px] font-medium text-stone-300 min-w-[700px]">
+            <thead>
+              <tr className="bg-fp-surface border-b border-fp-border text-[9px] uppercase tracking-wider text-stone-500 font-bold sticky top-0 z-10 select-none">
+                <th className="py-2.5 px-3 text-left">Time (Local)</th>
+                <th className="py-2.5 px-3 text-left">Vehicle ID</th>
+                <th className="py-2.5 px-3 text-left">Operator Name</th>
+                <th className="py-2.5 px-3 text-center">Latitude, Longitude</th>
+                <th className="py-2.5 px-3 text-center">Velocity</th>
+                <th className="py-2.5 px-3 text-right pr-4">Fuel Level</th>
+              </tr>
+            </thead>
             <tbody className="divide-y divide-fp-border/40">
-              {filteredLogs.map((log: any) => (
-                <tr key={log.id} className="hover:bg-fp-surface/10 transition-colors">
-                  <td className="py-2 px-3 text-stone-500 tabular-nums">
-                    {new Date(log.timestamp).toLocaleTimeString('en-US', { hour12: false })} (Local)
-                  </td>
-                  <td className="py-2 px-3 font-bold text-stone-200">{log.vehicle_number}</td>
-                  <td className="py-2 px-3 text-stone-400">{log.driver_name}</td>
-                  <td className="py-2 px-3 text-center text-stone-500 font-mono select-all">
-                    {log.latitude.toFixed(5)}, {log.longitude.toFixed(5)}
-                  </td>
-                  <td className="py-2 px-3 text-center tabular-nums text-stone-200">
-                    <span className={log.speed > 95 ? "text-fp-danger font-semibold" : ""}>
-                      {log.speed.toFixed(1)} km/h
-                    </span>
-                  </td>
-                  <td className="py-2 px-3 text-right pr-4 tabular-nums">
-                    <span className={`font-bold ${log.fuel_level < 15 ? "text-fp-danger" : "text-fp-success"}`}>
-                      {log.fuel_level.toFixed(1)}%
-                    </span>
+              {filteredLogs.length > 0 ? (
+                filteredLogs.map((log: any) => {
+                  const isSpeeding = log.speed > 80;
+                  const isLowFuel = log.fuel_level < 15;
+                  return (
+                    <tr key={log.id} className="hover:bg-fp-surface/10 transition-colors">
+                      <td className="py-2.5 px-3 text-stone-500 tabular-nums">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSpeeding ? 'bg-fp-danger animate-pulse' : isLowFuel ? 'bg-fp-warning animate-pulse' : 'bg-fp-success'}`} />
+                          <span>{new Date(log.timestamp).toLocaleTimeString('en-US', { hour12: false })}</span>
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 font-bold text-stone-200">{log.vehicle_number}</td>
+                      <td className="py-2.5 px-3 text-stone-400">{log.driver_name}</td>
+                      <td className="py-2.5 px-3 text-center text-stone-500 font-mono select-all">
+                        {log.latitude.toFixed(5)}, {log.longitude.toFixed(5)}
+                      </td>
+                      <td className="py-2.5 px-3 text-center tabular-nums text-stone-200">
+                        <span className={isSpeeding ? "text-fp-danger font-bold" : ""}>
+                          {log.speed.toFixed(1)} km/h
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-right pr-4 tabular-nums">
+                        <span className={`font-bold ${isLowFuel ? "text-fp-danger font-bold animate-pulse" : "text-fp-success"}`}>
+                          {log.fuel_level.toFixed(1)}%
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-stone-600 select-none">
+                    No matching telemetry logs found for the selected filter.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
