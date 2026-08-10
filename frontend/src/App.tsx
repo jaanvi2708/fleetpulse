@@ -23,6 +23,7 @@ interface Toast {
 
 export const App: React.FC = () => {
   const isAuthenticated = useFleetStore((state) => state.isAuthenticated);
+  const userName = useFleetStore((state) => state.userName) || 'Ops Commander';
   const [authView, setAuthView] = useState<'login' | 'register'>('login');
   const [currentTab, setCurrentTab] = useState<string>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -109,16 +110,32 @@ export const App: React.FC = () => {
           <Menu className="w-5 h-5" />
         </button>
         
-        <div className="flex items-center gap-2 select-none">
-          <Radio className="w-4 h-4 text-fp-accent animate-pulse" />
-          <span className="font-bold text-stone-200 text-sm tracking-wide">FleetPulse</span>
+        <div className="flex items-center gap-1.5 select-none">
+          <Radio className="w-3.5 h-3.5 text-fp-accent animate-pulse" />
+          <span className="font-bold text-stone-200 text-xs tracking-wide">FleetPulse</span>
           <span className="text-[9px] bg-fp-accent/15 border border-fp-accent/25 text-fp-accent px-1.5 py-0.5 rounded uppercase font-semibold">
             {activeTitle}
           </span>
         </div>
 
-        {/* Space balancing block */}
-        <div className="w-8"></div>
+        <div className="flex items-center gap-3">
+          {/* Live status dot */}
+          <div className="flex items-center gap-1.5">
+            <span className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-fp-success animate-pulse' : 'bg-fp-danger'}`} />
+            <span className="text-[9px] font-bold text-stone-500 uppercase tracking-wider hidden xs:inline">
+              {wsConnected ? 'Live' : 'Offline'}
+            </span>
+          </div>
+
+          {/* User Profile avatar */}
+          <div 
+            onClick={() => setCurrentTab('settings')}
+            className="w-7 h-7 rounded-full bg-fp-accent/15 border border-fp-border flex items-center justify-center text-[10px] font-bold text-stone-300 select-none cursor-pointer hover:border-fp-accent transition-colors shrink-0"
+            title="Account Settings"
+          >
+            {userName.charAt(0).toUpperCase()}
+          </div>
+        </div>
       </header>
 
       {/* Sidebar Navigation */}
