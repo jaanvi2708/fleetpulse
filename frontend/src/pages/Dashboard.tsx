@@ -144,8 +144,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
         </div>
         
         {/* Right toolbar */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="hidden sm:flex items-center gap-2">
             <button className="w-9 h-9 rounded-lg border border-fp-border bg-fp-card flex items-center justify-center text-stone-500 hover:text-stone-300 hover:border-fp-border-light transition-colors">
               <Search className="w-4 h-4" />
             </button>
@@ -159,26 +159,29 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
             </button>
           </div>
 
-          <div className="w-px h-8 bg-fp-border"></div>
+          <div className="hidden sm:block w-px h-8 bg-fp-border"></div>
 
-          {/* Clock */}
-          <div className="text-right">
-            <div className="flex items-center gap-2">
-              <span className="text-[15px] font-medium text-stone-200 tabular-nums">
-                {clock.toLocaleTimeString('en-US', { hour12: false })}
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-fp-accent"></span>
+          {/* Clock and Live status container (stacked on mobile, row on desktop) */}
+          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1.5 sm:gap-3">
+            {/* Clock */}
+            <div className="text-right">
+              <div className="flex items-center gap-1.5 justify-end">
+                <span className="text-[14px] font-medium text-stone-200 tabular-nums">
+                  {clock.toLocaleTimeString('en-US', { hour12: false })}
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-fp-accent shrink-0"></span>
+              </div>
+              <p className="text-[9px] text-stone-500 text-right">
+                {clock.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
             </div>
-            <p className="text-[10px] text-stone-500 text-right">
-              {clock.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-            </p>
-          </div>
 
-          {/* Status pill */}
-          <button className="flex items-center gap-2 px-3 py-1.5 bg-fp-accent/8 border border-fp-accent/15 rounded-md text-[11px] text-fp-accent font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-fp-accent"></span>
-            Live
-          </button>
+            {/* Status pill (placed below date on mobile) */}
+            <button className="flex items-center gap-1.5 px-2.5 py-1 bg-fp-accent/8 border border-fp-accent/15 rounded-md text-[10px] text-fp-accent font-semibold self-end sm:self-auto shrink-0 select-none">
+              <span className="w-1.5 h-1.5 rounded-full bg-fp-accent animate-pulse"></span>
+              Live
+            </button>
+          </div>
         </div>
       </div>
 
