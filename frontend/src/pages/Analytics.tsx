@@ -162,8 +162,8 @@ export const Analytics: React.FC = () => {
             Driver Safety Leaderboard
           </h4>
           
-          <div className="bg-fp-bg border border-fp-border rounded-lg overflow-hidden">
-            <table className="w-full text-left border-collapse text-xs select-none">
+          <div className="bg-fp-bg border border-fp-border rounded-lg overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs select-none min-w-[550px]">
               <thead>
                 <tr className="bg-fp-surface border-b border-fp-border text-stone-500 font-medium uppercase tracking-wider">
                   <th className="p-3 text-center">Rank</th>
