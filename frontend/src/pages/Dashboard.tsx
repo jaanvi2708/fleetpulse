@@ -131,9 +131,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
     ? vehicles.find(v => v.id === myClientShipment.vehicle_id) || null
     : null;
 
-  // Client: alerts for their shipment's vehicle
+  // Client: alerts for their shipment's vehicle — exclude internal fleet telemetry (Low Fuel, etc.)
+  const CLIENT_EXCLUDED_ALERT_TYPES = ['Low Fuel', 'Low Fuel Level', 'Fuel', 'Fuel Alert'];
   const myClientAlerts = myClientVehicle
-    ? alerts.filter(a => (a.vehicle_id === myClientVehicle.id || a.vehicle_number === myClientVehicle.vehicle_number) && !a.resolved)
+    ? alerts.filter(a =>
+        (a.vehicle_id === myClientVehicle.id || a.vehicle_number === myClientVehicle.vehicle_number)
+        && !a.resolved
+        && !CLIENT_EXCLUDED_ALERT_TYPES.some(t => a.alert_type?.toLowerCase().includes(t.toLowerCase()))
+      )
     : [];
 
   // ── LOADING SCREEN ────────────────────────────────────────────────

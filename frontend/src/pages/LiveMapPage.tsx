@@ -5,17 +5,32 @@ import { Shield, Eye, Layers } from 'lucide-react';
 
 export const LiveMapPage: React.FC = () => {
   const vehicles = useFleetStore((state) => state.vehicles);
-  
+  const shipments = useFleetStore((state) => state.shipments);
+  const userRole = useFleetStore((state) => state.userRole) || 'admin';
+
   // Layer Toggles State
   const [showRoutes, setShowRoutes] = useState(true);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [showGeofences, setShowGeofences] = useState(true);
 
-  // Stats calculation for HUD
-  const totalCount = vehicles.length;
-  const activeCount = vehicles.filter(v => v.status === 'Moving').length;
-  const offlineCount = vehicles.filter(v => v.status === 'Offline').length;
-  const idleCount = vehicles.filter(v => v.status === 'Idle').length;
+  // For 'user' role: find their active shipment's vehicle
+  const myClientShipment = userRole === 'user'
+    ? (shipments.find(s => s.status !== 'Delivered') || shipments[0] || null)
+    : null;
+  const myClientVehicle = myClientShipment
+    ? vehicles.find(v => v.id === myClientShipment.vehicle_id) || null
+    : null;
+
+  // Map vehicles scoped to role
+  const mapVehicles = userRole === 'user'
+    ? (myClientVehicle ? [myClientVehicle] : [])
+    : vehicles;
+
+  // Stats calculation for HUD — scoped to what the user can see
+  const totalCount = mapVehicles.length;
+  const activeCount = mapVehicles.filter(v => v.status === 'Moving').length;
+  const offlineCount = mapVehicles.filter(v => v.status === 'Offline').length;
+  const idleCount = mapVehicles.filter(v => v.status === 'Idle').length;
 
   return (
     <div className="space-y-4 h-[calc(100vh-6rem)] flex flex-col">
@@ -24,10 +39,12 @@ export const LiveMapPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0">
         <div>
           <h2 className="text-[26px] font-extrabold tracking-tight text-stone-200">
-            Geospatial Fleet Map
+            {userRole === 'user' ? 'My Shipment Location' : 'Geospatial Fleet Map'}
           </h2>
           <p className="text-stone-500 text-xs">
-            Live telemetry positioning and dispatch route overlays
+            {userRole === 'user'
+              ? `Live tracking of the vehicle carrying your shipment${myClientShipment ? ` — ${myClientShipment.origin} → ${myClientShipment.destination}` : ''}`
+              : 'Live telemetry positioning and dispatch route overlays'}
           </p>
         </div>
         
@@ -71,7 +88,7 @@ export const LiveMapPage: React.FC = () => {
       <div className="flex-1 min-h-0 relative rounded-xl border border-fp-border overflow-hidden shadow-card">
         
         <LiveMap 
-          vehicles={vehicles} 
+          vehicles={mapVehicles} 
           showRoutes={showRoutes} 
           showHeatmap={showHeatmap} 
           showGeofences={showGeofences}
@@ -88,7 +105,9 @@ export const LiveMapPage: React.FC = () => {
           
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="bg-fp-surface/60 p-2 rounded border border-fp-border text-center">
-              <p className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider">Total Fleet</p>
+              <p className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider">
+                {userRole === 'user' ? 'Carrier' : 'Total Fleet'}
+              </p>
               <p className="text-base font-semibold text-stone-200 mt-0.5">{totalCount}</p>
             </div>
             <div className="bg-fp-surface/60 p-2 rounded border border-fp-border text-center">

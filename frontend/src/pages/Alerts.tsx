@@ -66,12 +66,16 @@ export const Alerts: React.FC = () => {
     ? vehicles.find(v => v.id === myShipment.vehicle_id) || null
     : null;
 
+  const CLIENT_EXCLUDED_ALERT_TYPES = ['Low Fuel', 'Low Fuel Level', 'Fuel', 'Fuel Alert'];
+
   const filteredAlerts = alerts.filter((alert) => {
     // First apply role scope
     if (userRole === 'driver' && myVehicle) {
       if (alert.vehicle_id !== myVehicle.id && alert.vehicle_number !== myVehicle.vehicle_number) return false;
     } else if (userRole === 'user' && myClientVehicle) {
       if (alert.vehicle_id !== myClientVehicle.id && alert.vehicle_number !== myClientVehicle.vehicle_number) return false;
+      // Exclude internal fleet telemetry alerts (fuel, maintenance) from client view
+      if (CLIENT_EXCLUDED_ALERT_TYPES.some(t => alert.alert_type?.toLowerCase().includes(t.toLowerCase()))) return false;
     }
     // Then apply UI filters
     const matchesSearch = 
