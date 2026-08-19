@@ -449,10 +449,10 @@ export const Settings: React.FC = () => {
 
         <SettingRow label="Map Style" description="Base tile style for the live tracking map">
           <Sel value={mapStyle} onChange={setMapStyle} options={[
-            { value: 'dark',      label: '🌑 Dark (default)' },
-            { value: 'satellite', label: '🛰️ Satellite'       },
-            { value: 'terrain',   label: '🗺️ Terrain'         },
-            { value: 'light',     label: '☀️ Light'            },
+            { value: 'dark',      label: 'Dark (default)' },
+            { value: 'satellite', label: 'Satellite'       },
+            { value: 'terrain',   label: 'Terrain'         },
+            { value: 'light',     label: 'Light'            },
           ]} />
         </SettingRow>
 
@@ -565,7 +565,7 @@ export const Settings: React.FC = () => {
 
         {[
           { icon: <Database className="w-3.5 h-3.5" />, label: 'API Documentation',    sub: 'Browse the FleetPulse REST API reference'   },
-          { icon: <Wifi className="w-3.5 h-3.5" />,     label: 'WebSocket Status',      sub: `Backend WS is ${wsAlive ? '✅ reachable' : wsAlive === false ? '❌ unreachable' : '⏳ checking…'}` },
+          { icon: <Wifi className="w-3.5 h-3.5" />,     label: 'WebSocket Status',      sub: `Backend WS is ${wsAlive ? 'reachable' : wsAlive === false ? 'unreachable' : 'checking...'}` },
           { icon: <MapPin className="w-3.5 h-3.5" />,   label: 'GPS Calibration Guide', sub: 'Troubleshoot vehicle position accuracy'      },
           { icon: <Zap className="w-3.5 h-3.5" />,      label: "What's New",            sub: 'FleetPulse v2.1.0 — Release notes'           },
         ].map((item) => (

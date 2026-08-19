@@ -101,10 +101,10 @@ interface LiveMapProps {
 
 // Preset Geofences
 const PRESET_GEOFENCES = [
-  { id: 1, name: "SF Logistics Hub", center: [37.7749, -122.4194] as [number, number], radius: 15000, color: "#8a9bae" },
-  { id: 2, name: "LA Terminal North", center: [34.0522, -118.2437] as [number, number], radius: 20000, color: "#a0937d" },
-  { id: 3, name: "NY Depot East", center: [40.7128, -74.0060] as [number, number], radius: 18000, color: "#8a9bae" },
-  { id: 4, name: "Houston Hub Southwest", center: [29.7604, -95.3698] as [number, number], radius: 25000, color: "#c4956a" },
+  { id: 1, name: "Mumbai Logistics Hub", center: [19.0760, 72.8777] as [number, number], radius: 15000, color: "#8a9bae" },
+  { id: 2, name: "Delhi Terminal North", center: [28.6139, 77.2090] as [number, number], radius: 20000, color: "#a0937d" },
+  { id: 3, name: "Bangalore Depot East", center: [12.9716, 77.5946] as [number, number], radius: 18000, color: "#8a9bae" },
+  { id: 4, name: "Kolkata Hub East", center: [22.5726, 88.3639] as [number, number], radius: 25000, color: "#c4956a" },
 ];
 
 export const LiveMap: React.FC<LiveMapProps> = ({
@@ -114,8 +114,8 @@ export const LiveMap: React.FC<LiveMapProps> = ({
   showGeofences = false,
   onVehicleClick,
   height = '500px',
-  zoom = 4,
-  center = [37.0902, -95.7129]
+  zoom = 5,
+  center = [20.5937, 78.9629]
 }) => {
   return (
     <div className="relative rounded-lg border border-fp-border overflow-hidden w-full z-0" style={{ height }}>

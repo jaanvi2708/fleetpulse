@@ -16,26 +16,22 @@ const MOCK_USER = {
 
 const ROUTES: Record<string, [number, number][]> = {
   "FP-101": [
-    [37.7749, -122.4194], [37.5630, -121.9886], [37.3382, -121.8863],
-    [36.9741, -121.9196], [36.6002, -121.8947], [35.6870, -120.6588],
-    [35.2828, -120.6596], [34.9530, -120.4357], [34.4208, -119.6982],
-    [34.2746, -118.7798], [34.0522, -118.2437]
+    [28.6139, 77.2090], [28.4595, 77.0266], [28.2045, 76.7905],
+    [27.8872, 76.2856], [27.7027, 76.2001], [27.3878, 75.9620],
+    [26.9124, 75.7873]
   ],
   "FP-202": [
-    [34.0522, -118.2437], [33.8958, -118.2201], [33.7701, -118.1937],
-    [33.6695, -117.8232], [33.4936, -117.1484], [33.1959, -117.3795],
-    [33.1094, -117.2892], [33.0167, -117.1497], [32.7157, -117.1611]
+    [12.9716, 77.5946], [12.7409, 77.8253], [12.5186, 78.2138],
+    [12.7904, 78.7166], [12.9165, 79.1325], [12.8342, 79.7036],
+    [13.0827, 80.2707]
   ],
   "FP-303": [
-    [40.7128, -74.0060], [40.8448, -73.8648], [41.0534, -73.5387],
-    [41.3082, -72.9279], [41.5623, -72.6509], [41.7658, -72.6851],
-    [41.9782, -72.1984], [42.1015, -71.5622], [42.2626, -71.8023],
-    [42.3601, -71.0589]
+    [22.5726, 88.3639], [22.3302, 87.3237], [21.4934, 86.9337],
+    [21.0574, 86.4958], [20.4625, 85.8830], [20.2961, 85.8245]
   ],
   "FP-404": [
-    [41.8781, -87.6298], [41.7508, -87.4626], [41.6064, -87.3372],
-    [41.5867, -86.2520], [41.9781, -85.9236], [42.2914, -85.5872],
-    [42.3314, -83.0458]
+    [17.3850, 78.4867], [17.1439, 79.6238], [17.0004, 80.0076],
+    [16.7725, 80.2917], [16.5062, 80.6480]
   ],
   "FP-505": [
     [19.0760, 72.8777], [19.0330, 73.0297], [18.9975, 73.1213],
@@ -45,17 +41,17 @@ const ROUTES: Record<string, [number, number][]> = {
 };
 
 let vehicles = [
-  { id: 1, vehicle_number: "FP-101", driver_name: "Marcus Vance", status: "Moving", speed: 72.5, fuel_level: 84.2, latitude: 37.7749, longitude: -122.4194, waypoint_idx: 0, last_updated: new Date().toISOString() },
-  { id: 2, vehicle_number: "FP-202", driver_name: "Elena Rostova", status: "Idle", speed: 0.0, fuel_level: 48.9, latitude: 34.0522, longitude: -118.2437, waypoint_idx: 0, last_updated: new Date().toISOString() },
-  { id: 3, vehicle_number: "FP-303", driver_name: "Jaxson Reed", status: "Moving", speed: 62.0, fuel_level: 12.8, latitude: 40.7128, longitude: -74.0060, waypoint_idx: 0, last_updated: new Date().toISOString() },
-  { id: 4, vehicle_number: "FP-404", driver_name: "Sarah Jenkins", status: "Offline", speed: 0.0, fuel_level: 92.0, latitude: 41.8781, longitude: -87.6298, waypoint_idx: 0, last_updated: new Date().toISOString() },
+  { id: 1, vehicle_number: "FP-101", driver_name: "Aarav Mehta", status: "Moving", speed: 72.5, fuel_level: 84.2, latitude: 28.6139, longitude: 77.2090, waypoint_idx: 0, last_updated: new Date().toISOString() },
+  { id: 2, vehicle_number: "FP-202", driver_name: "Priya Nair", status: "Idle", speed: 0.0, fuel_level: 48.9, latitude: 12.9716, longitude: 77.5946, waypoint_idx: 0, last_updated: new Date().toISOString() },
+  { id: 3, vehicle_number: "FP-303", driver_name: "Rohan Deshmukh", status: "Moving", speed: 62.0, fuel_level: 12.8, latitude: 22.5726, longitude: 88.3639, waypoint_idx: 0, last_updated: new Date().toISOString() },
+  { id: 4, vehicle_number: "FP-404", driver_name: "Karan Johar", status: "Offline", speed: 0.0, fuel_level: 92.0, latitude: 17.3850, longitude: 78.4867, waypoint_idx: 0, last_updated: new Date().toISOString() },
   { id: 5, vehicle_number: "FP-505", driver_name: "Arjun Sharma", status: "Moving", speed: 98.6, fuel_level: 67.5, latitude: 19.0760, longitude: 72.8777, waypoint_idx: 0, last_updated: new Date().toISOString() }
 ];
 
 let shipments = [
-  { id: 1, shipment_number: "SH-5001", vehicle_id: 1, origin: "San Francisco, CA", destination: "Los Angeles, CA", eta: "2h 45m", status: "In Transit", progress: 42.0, current_lat: 37.7749, current_lng: -122.4194 },
-  { id: 2, shipment_number: "SH-5002", vehicle_id: 2, origin: "Los Angeles, CA", destination: "Phoenix, AZ", eta: "Pending Dispatch", status: "Pending", progress: 0.0, current_lat: 34.0522, current_lng: -118.2437 },
-  { id: 3, shipment_number: "SH-5003", vehicle_id: 3, origin: "New York, NY", destination: "Boston, MA", eta: "Delayed (+55m)", status: "Delayed", progress: 78.5, current_lat: 40.7128, current_lng: -74.0060 },
+  { id: 1, shipment_number: "SH-5001", vehicle_id: 1, origin: "Delhi, DL", destination: "Jaipur, RJ", eta: "2h 45m", status: "In Transit", progress: 42.0, current_lat: 28.6139, current_lng: 77.2090 },
+  { id: 2, shipment_number: "SH-5002", vehicle_id: 2, origin: "Bangalore, KA", destination: "Chennai, TN", eta: "Pending Dispatch", status: "Pending", progress: 0.0, current_lat: 12.9716, current_lng: 77.5946 },
+  { id: 3, shipment_number: "SH-5003", vehicle_id: 3, origin: "Kolkata, WB", destination: "Bhubaneswar, OD", eta: "Delayed (+55m)", status: "Delayed", progress: 78.5, current_lat: 22.5726, current_lng: 88.3639 },
   { id: 4, shipment_number: "SH-5004", vehicle_id: 5, origin: "Mumbai, MH", destination: "Pune, MH", eta: "1h 25m", status: "In Transit", progress: 32.0, current_lat: 19.0760, current_lng: 72.8777 }
 ];
 
@@ -301,19 +297,19 @@ const enableMockInterceptor = () => {
         return new Response(JSON.stringify({
           total_telemetry_count: 2450,
           vehicle_summaries: [
-            { vehicle_id: 1, vehicle_number: "FP-101", driver_name: "Marcus Vance", status: "Moving", log_count: 450, avg_speed: 72.5, avg_fuel_level: 84.2, alerts_count: 0 },
-            { vehicle_id: 2, vehicle_number: "FP-202", driver_name: "Elena Rostova", status: "Idle", log_count: 320, avg_speed: 0.0, avg_fuel_level: 48.9, alerts_count: 0 },
-            { vehicle_id: 3, vehicle_number: "FP-303", driver_name: "Jaxson Reed", status: "Moving", log_count: 280, avg_speed: 62.0, avg_fuel_level: 12.8, alerts_count: 1 },
-            { vehicle_id: 4, vehicle_number: "FP-404", driver_name: "Sarah Jenkins", status: "Offline", log_count: 150, avg_speed: 0.0, avg_fuel_level: 92.0, alerts_count: 1 },
+            { vehicle_id: 1, vehicle_number: "FP-101", driver_name: "Aarav Mehta", status: "Moving", log_count: 450, avg_speed: 72.5, avg_fuel_level: 84.2, alerts_count: 0 },
+            { vehicle_id: 2, vehicle_number: "FP-202", driver_name: "Priya Nair", status: "Idle", log_count: 320, avg_speed: 0.0, avg_fuel_level: 48.9, alerts_count: 0 },
+            { vehicle_id: 3, vehicle_number: "FP-303", driver_name: "Rohan Deshmukh", status: "Moving", log_count: 280, avg_speed: 62.0, avg_fuel_level: 12.8, alerts_count: 1 },
+            { vehicle_id: 4, vehicle_number: "FP-404", driver_name: "Karan Johar", status: "Offline", log_count: 150, avg_speed: 0.0, avg_fuel_level: 92.0, alerts_count: 1 },
             { vehicle_id: 5, vehicle_number: "FP-505", driver_name: "Arjun Sharma", status: "Moving", log_count: 510, avg_speed: 98.6, avg_fuel_level: 67.5, alerts_count: 1 }
           ],
           recent_telemetry: Array.from({ length: 25 }, (_, i) => ({
             id: i + 1,
             timestamp: new Date(Date.now() - i * 12 * 60000).toISOString(),
             vehicle_number: ["FP-101", "FP-202", "FP-303", "FP-404", "FP-505"][i % 5],
-            driver_name: ["Marcus Vance", "Elena Rostova", "Jaxson Reed", "Sarah Jenkins", "Arjun Sharma"][i % 5],
-            latitude: [37.7749, 34.0522, 40.7128, 41.8781, 19.0760][i % 5] + (i * 0.005),
-            longitude: [-122.4194, -118.2437, -74.0060, -87.6298, 72.8777][i % 5] + (i * 0.005),
+            driver_name: ["Aarav Mehta", "Priya Nair", "Rohan Deshmukh", "Karan Johar", "Arjun Sharma"][i % 5],
+            latitude: [28.6139, 12.9716, 22.5726, 17.3850, 19.0760][i % 5] + (i * 0.005),
+            longitude: [77.2090, 77.5946, 88.3639, 78.4867, 72.8777][i % 5] + (i * 0.005),
             speed: [72.5, 0.0, 62.0, 0.0, 98.6][i % 5],
             fuel_level: [84.2, 48.9, 12.8, 92.0, 67.5][i % 5]
           })),

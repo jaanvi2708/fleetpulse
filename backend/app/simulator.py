@@ -14,66 +14,53 @@ BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000/api/telemetry")
 # Each waypoint is (lat, lng) along the real road path
 # ─────────────────────────────────────────────────────────────────────────────
 ROUTES = {
-    # FP-101: SF → LA via US-101 / I-5 corridor
+    # FP-101: Delhi → Jaipur via NH-48
     "FP-101": [
-        (37.7749, -122.4194),  # San Francisco, CA
-        (37.5630, -121.9886),  # Fremont, CA
-        (37.3382, -121.8863),  # San Jose, CA
-        (36.9741, -121.9196),  # Watsonville, CA
-        (36.6002, -121.8947),  # Salinas, CA
-        (35.6870, -120.6588),  # Paso Robles, CA
-        (35.2828, -120.6596),  # San Luis Obispo, CA
-        (34.9530, -120.4357),  # Santa Maria, CA
-        (34.4208, -119.6982),  # Santa Barbara, CA
-        (34.2746, -118.7798),  # Thousand Oaks, CA
-        (34.0522, -118.2437),  # Los Angeles, CA (destination)
+        (28.6139, 77.2090),  # Delhi
+        (28.4595, 77.0266),  # Gurugram
+        (28.2045, 76.7905),  # Dharuhera
+        (27.8872, 76.2856),  # Behror
+        (27.7027, 76.2001),  # Kotputli
+        (27.3878, 75.9620),  # Shahpura
+        (26.9124, 75.7873),  # Jaipur (destination)
     ],
-    # FP-202: LA → San Diego via I-5
+    # FP-202: Bangalore → Chennai via NH-48/NH-75
     "FP-202": [
-        (34.0522, -118.2437),  # Los Angeles, CA
-        (33.8958, -118.2201),  # Compton, CA
-        (33.7701, -118.1937),  # Long Beach, CA
-        (33.6695, -117.8232),  # Irvine, CA
-        (33.4936, -117.1484),  # San Clemente, CA
-        (33.1959, -117.3795),  # Oceanside, CA
-        (33.1094, -117.2892),  # Carlsbad, CA
-        (33.0167, -117.1497),  # Del Mar, CA
-        (32.7157, -117.1611),  # San Diego, CA (destination)
+        (12.9716, 77.5946),  # Bangalore
+        (12.7409, 77.8253),  # Hosur
+        (12.5186, 78.2138),  # Krishnagiri
+        (12.7904, 78.7166),  # Ambur
+        (12.9165, 79.1325),  # Vellore
+        (12.8342, 79.7036),  # Kanchipuram
+        (13.0827, 80.2707),  # Chennai (destination)
     ],
-    # FP-303: New York → Boston via I-95
+    # FP-303: Kolkata → Bhubaneswar via NH-16
     "FP-303": [
-        (40.7128,  -74.0060),  # New York, NY
-        (40.8448,  -73.8648),  # Bronx, NY
-        (41.0534,  -73.5387),  # Stamford, CT
-        (41.3082,  -72.9279),  # New Haven, CT
-        (41.5623,  -72.6509),  # Middletown, CT
-        (41.7658,  -72.6851),  # Hartford, CT
-        (41.9782,  -72.1984),  # Stafford Springs, CT
-        (42.1015,  -71.5622),  # Worcester, MA
-        (42.2626,  -71.8023),  # Framingham, MA
-        (42.3601,  -71.0589),  # Boston, MA (destination)
+        (22.5726, 88.3639),  # Kolkata
+        (22.3302, 87.3237),  # Kharagpur
+        (21.4934, 86.9337),  # Balasore
+        (21.0574, 86.4958),  # Bhadrak
+        (20.4625, 85.8830),  # Cuttack
+        (20.2961, 85.8245),  # Bhubaneswar (destination)
     ],
-    # FP-404: Chicago → Detroit via I-94
+    # FP-404: Hyderabad → Vijayawada via NH-65
     "FP-404": [
-        (41.8781,  -87.6298),  # Chicago, IL
-        (41.7508,  -87.4626),  # Chicago Heights, IL
-        (41.6064,  -87.3372),  # Lowell, IN
-        (41.5867,  -86.2520),  # South Bend, IN
-        (41.9781,  -85.9236),  # Sturgis, MI
-        (42.2914,  -85.5872),  # Kalamazoo, MI
-        (42.3314,  -83.0458),  # Detroit Metro, MI
-        (42.3314,  -83.0458),  # Detroit, MI (destination)
+        (17.3850, 78.4867),  # Hyderabad
+        (17.1439, 79.6238),  # Suryapet
+        (17.0004, 80.0076),  # Kodad
+        (16.7725, 80.2917),  # Nandigama
+        (16.5062, 80.6480),  # Vijayawada (destination)
     ],
-    # FP-505 (Arjun Sharma) → Mumbai to Pune via NH-48 (India)
+    # FP-505: Mumbai → Pune via NH-48
     "FP-505": [
-        (19.0760,  72.8777),  # Mumbai (Bandra), MH
-        (19.0330,  73.0297),  # Thane, MH
-        (18.9975,  73.1213),  # Kalyan, MH
-        (18.9068,  73.3559),  # Khopoli, MH
-        (18.7811,  73.4877),  # Khandala (Ghats), MH
-        (18.7563,  73.4784),  # Lonavala, MH
-        (18.6524,  73.7792),  # Talegaon, MH
-        (18.5204,  73.8567),  # Pune (destination), MH
+        (19.0760,  72.8777),  # Mumbai (Bandra)
+        (19.0330,  73.0297),  # Thane
+        (18.9975,  73.1213),  # Kalyan
+        (18.9068,  73.3559),  # Khopoli
+        (18.7811,  73.4877),  # Khandala (Ghats)
+        (18.7563,  73.4784),  # Lonavala
+        (18.6524,  73.7792),  # Talegaon
+        (18.5204,  73.8567),  # Pune (destination)
     ],
 }
 

@@ -55,10 +55,10 @@ def seed_data(db: Session):
     
     # 2. Create Vehicles
     vehicles_data = [
-        {"id": 1, "vehicle_number": "FP-101", "driver_name": "Marcus Vance", "status": "Moving", "speed": 72.5, "fuel_level": 84.2, "latitude": 37.7749, "longitude": -122.4194},
-        {"id": 2, "vehicle_number": "FP-202", "driver_name": "Elena Rostova", "status": "Idle", "speed": 0.0, "fuel_level": 48.9, "latitude": 34.0522, "longitude": -118.2437},
-        {"id": 3, "vehicle_number": "FP-303", "driver_name": "Jaxson Reed", "status": "Moving", "speed": 62.0, "fuel_level": 12.8, "latitude": 40.7128, "longitude": -74.0060}, # Low Fuel
-        {"id": 4, "vehicle_number": "FP-404", "driver_name": "Sarah Jenkins", "status": "Offline", "speed": 0.0, "fuel_level": 92.0, "latitude": 41.8781, "longitude": -87.6298}, # Offline
+        {"id": 1, "vehicle_number": "FP-101", "driver_name": "Aarav Mehta", "status": "Moving", "speed": 72.5, "fuel_level": 84.2, "latitude": 28.6139, "longitude": 77.2090},
+        {"id": 2, "vehicle_number": "FP-202", "driver_name": "Priya Nair", "status": "Idle", "speed": 0.0, "fuel_level": 48.9, "latitude": 12.9716, "longitude": 77.5946},
+        {"id": 3, "vehicle_number": "FP-303", "driver_name": "Rohan Deshmukh", "status": "Moving", "speed": 62.0, "fuel_level": 12.8, "latitude": 22.5726, "longitude": 88.3639}, # Low Fuel
+        {"id": 4, "vehicle_number": "FP-404", "driver_name": "Karan Johar", "status": "Offline", "speed": 0.0, "fuel_level": 92.0, "latitude": 17.3850, "longitude": 78.4867}, # Offline
         {"id": 5, "vehicle_number": "FP-505", "driver_name": "Arjun Sharma", "status": "Moving", "speed": 98.6, "fuel_level": 67.5, "latitude": 19.0760, "longitude": 72.8777},  # Mumbai, India — Speeding
     ]
     
@@ -100,9 +100,9 @@ def seed_data(db: Session):
             
     # 4. Create Shipments
     shipments_data = [
-        {"shipment_number": "SH-5001", "vehicle_id": 1, "origin": "San Francisco, CA", "destination": "Los Angeles, CA", "eta": "2h 45m", "status": "In Transit", "progress": 42.0},
-        {"shipment_number": "SH-5002", "vehicle_id": 2, "origin": "Los Angeles, CA", "destination": "Phoenix, AZ", "eta": "Pending Dispatch", "status": "Pending", "progress": 0.0},
-        {"shipment_number": "SH-5003", "vehicle_id": 3, "origin": "New York, NY", "destination": "Boston, MA", "eta": "Delayed (+55m)", "status": "Delayed", "progress": 78.5},
+        {"shipment_number": "SH-5001", "vehicle_id": 1, "origin": "Delhi, DL", "destination": "Jaipur, RJ", "eta": "2h 45m", "status": "In Transit", "progress": 42.0},
+        {"shipment_number": "SH-5002", "vehicle_id": 2, "origin": "Bangalore, KA", "destination": "Chennai, TN", "eta": "Pending Dispatch", "status": "Pending", "progress": 0.0},
+        {"shipment_number": "SH-5003", "vehicle_id": 3, "origin": "Kolkata, WB", "destination": "Bhubaneswar, OD", "eta": "Delayed (+55m)", "status": "Delayed", "progress": 78.5},
         {"shipment_number": "SH-5004", "vehicle_id": 5, "origin": "Mumbai, MH", "destination": "Pune, MH", "eta": "1h 25m", "status": "In Transit", "progress": 32.0},
     ]
     

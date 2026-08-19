@@ -9,55 +9,48 @@ import { useFleetStore } from '../store/fleetStore';
 import type { Vehicle } from '../store/fleetStore';
 import { LiveMap } from '../components/LiveMap';
 
-// ── US Highway routes aligned exactly with backend simulator waypoints ──────
-// FP-101 (Marcus Vance)   → SF → LA via US-101/I-5  [lat 37.77, lng -122.41]
-// FP-202 (Elena Rostova)  → LA → San Diego via I-5  [lat 34.05, lng -118.24]
-// FP-303 (Jaxson Reed)    → NY → Boston via I-95    [lat 40.71, lng -74.00]
-// FP-404 (Sarah Jenkins)  → Chicago → Detroit I-94  [lat 41.87, lng -87.62]
-// FP-505 (Damian Thorn)   → Houston → Dallas I-45   [lat 29.76, lng -95.36]
+// ── Indian Highway routes aligned exactly with backend simulator waypoints ──
+// FP-101 (Aarav Mehta)    → Delhi → Jaipur via NH-48     [lat 28.61, lng 77.20]
+// FP-202 (Priya Nair)     → Bangalore → Chennai via NH-48 [lat 12.97, lng 77.59]
+// FP-303 (Rohan Deshmukh) → Kolkata → Bhubaneswar NH-16  [lat 22.57, lng 88.36]
+// FP-404 (Karan Johar)    → Hyderabad → Vijayawada NH-65 [lat 17.38, lng 78.48]
+// FP-505 (Arjun Sharma)   → Mumbai → Pune via NH-48      [lat 19.07, lng 72.87]
 
 const VEHICLE_REGION_TRIPS: Record<string, Array<{
   from: string; to: string; highway: string; km: number; cargo: string;
 }>> = {
   'FP-101': [
-    { from: 'San Francisco, CA',   to: 'Los Angeles, CA',    highway: 'US-101 S', km: 616, cargo: 'Electronics — 18 pallets' },
-    { from: 'San Jose, CA',        to: 'Salinas, CA',         highway: 'US-101 S', km: 124, cargo: 'Produce — 22 pallets' },
-    { from: 'San Francisco, CA',   to: 'Sacramento, CA',      highway: 'I-80 E',   km: 145, cargo: 'Pharmaceuticals — 8 pallets' },
-    { from: 'Sacramento, CA',      to: 'Fresno, CA',          highway: 'CA-99 S',  km: 272, cargo: 'Auto Parts — 14 pallets' },
-    { from: 'Santa Barbara, CA',   to: 'San Francisco, CA',   highway: 'US-101 N', km: 498, cargo: 'Retail Goods — 20 pallets' },
-    { from: 'San Francisco, CA',   to: 'San Luis Obispo, CA', highway: 'US-101 S', km: 370, cargo: 'Industrial Equipment' },
+    { from: 'Delhi, DL',          to: 'Jaipur, RJ',          highway: 'NH-48',   km: 270, cargo: 'Electronics — 18 pallets' },
+    { from: 'Delhi, DL',          to: 'Gurugram, HR',        highway: 'NH-48',   km: 35,  cargo: 'Courier Packages — 100 units' },
+    { from: 'Gurugram, HR',       to: 'Behror, RJ',          highway: 'NH-48',   km: 120, cargo: 'Spare Parts — 14 pallets' },
+    { from: 'Jaipur, RJ',          to: 'Delhi, DL',          highway: 'NH-48',   km: 270, cargo: 'Handicrafts — 20 pallets' },
+    { from: 'Delhi, DL',          to: 'Kotputli, RJ',        highway: 'NH-48',   km: 140, cargo: 'Industrial equipment' },
   ],
   'FP-202': [
-    { from: 'Los Angeles, CA',   to: 'San Diego, CA',      highway: 'I-5 S',    km: 193, cargo: 'Consumer Goods — 16 pallets' },
-    { from: 'Los Angeles, CA',   to: 'Phoenix, AZ',         highway: 'I-10 E',   km: 592, cargo: 'Machinery — 6 units' },
-    { from: 'San Diego, CA',     to: 'Las Vegas, NV',       highway: 'I-15 N',   km: 474, cargo: 'Packaged Food — 24 pallets' },
-    { from: 'Los Angeles, CA',   to: 'Santa Barbara, CA',   highway: 'US-101 N', km: 153, cargo: 'Medical Supplies' },
-    { from: 'Phoenix, AZ',       to: 'Tucson, AZ',          highway: 'I-10 S',   km: 183, cargo: 'Construction Materials' },
-    { from: 'Los Angeles, CA',   to: 'Riverside, CA',       highway: 'I-10 E',   km: 90,  cargo: 'Dry Goods — 18 pallets' },
+    { from: 'Bangalore, KA',     to: 'Chennai, TN',         highway: 'NH-48',   km: 346, cargo: 'Consumer Goods — 16 pallets' },
+    { from: 'Bangalore, KA',     to: 'Hosur, TN',           highway: 'NH-48',   km: 40,  cargo: 'Machinery — 6 units' },
+    { from: 'Hosur, TN',         to: 'Krishnagiri, TN',     highway: 'NH-48',   km: 50,  cargo: 'Packaged Food — 24 pallets' },
+    { from: 'Krishnagiri, TN',   to: 'Vellore, TN',         highway: 'NH-48',   km: 125, cargo: 'Medical Supplies' },
+    { from: 'Vellore, TN',       to: 'Kanchipuram, TN',     highway: 'NH-48',   km: 70,  cargo: 'Construction Materials' },
   ],
   'FP-303': [
-    { from: 'New York, NY',      to: 'Boston, MA',          highway: 'I-95 N',   km: 346, cargo: 'Apparel — 22 pallets' },
-    { from: 'New York, NY',      to: 'Philadelphia, PA',    highway: 'I-95 S',   km: 149, cargo: 'Frozen Foods — 10 pallets' },
-    { from: 'Philadelphia, PA',  to: 'Baltimore, MD',       highway: 'I-95 S',   km: 158, cargo: 'Office Furniture — 12 units' },
-    { from: 'Hartford, CT',      to: 'New York, NY',        highway: 'I-95 S',   km: 193, cargo: 'Electronics — 20 pallets' },
-    { from: 'Boston, MA',        to: 'Providence, RI',      highway: 'I-95 S',   km: 75,  cargo: 'Chemicals — Hazmat Class B' },
-    { from: 'New York, NY',      to: 'Newark, NJ',          highway: 'NJ Tpke',  km: 26,  cargo: 'Express Parcels — 300 units' },
+    { from: 'Kolkata, WB',       to: 'Bhubaneswar, OD',     highway: 'NH-16',   km: 440, cargo: 'Apparel — 22 pallets' },
+    { from: 'Kolkata, WB',       to: 'Kharagpur, WB',       highway: 'NH-16',   km: 130, cargo: 'Iron and Steel — 10 pallets' },
+    { from: 'Kharagpur, WB',     to: 'Balasore, OD',        highway: 'NH-16',   km: 120, cargo: 'Office Furniture — 12 units' },
+    { from: 'Balasore, OD',      to: 'Bhadrak, OD',         highway: 'NH-16',   km: 75,  cargo: 'Electronics — 20 pallets' },
   ],
   'FP-404': [
-    { from: 'Chicago, IL',       to: 'Detroit, MI',         highway: 'I-94 E',   km: 455, cargo: 'Auto Parts — Ford OEM' },
-    { from: 'Chicago, IL',       to: 'Indianapolis, IN',    highway: 'I-65 S',   km: 297, cargo: 'Steel Coils — 4 rolls' },
-    { from: 'Chicago, IL',       to: 'Milwaukee, WI',       highway: 'I-94 N',   km: 148, cargo: 'Beverages — 28 pallets' },
-    { from: 'Detroit, MI',       to: 'Cleveland, OH',       highway: 'I-90 W',   km: 285, cargo: 'Plastic Resin — Tanker' },
-    { from: 'Indianapolis, IN',  to: 'Cincinnati, OH',      highway: 'I-74 E',   km: 179, cargo: 'Agricultural Supplies' },
-    { from: 'Chicago, IL',       to: 'Rockford, IL',        highway: 'I-90 W',   km: 144, cargo: 'Paper Products — 30 pallets' },
+    { from: 'Hyderabad, TG',     to: 'Vijayawada, AP',      highway: 'NH-65',   km: 272, cargo: 'Auto Parts — Tata OEM' },
+    { from: 'Hyderabad, TG',     to: 'Suryapet, TG',        highway: 'NH-65',   km: 130, cargo: 'Cement Bags — 400 bags' },
+    { from: 'Suryapet, TG',      to: 'Kodad, TG',           highway: 'NH-65',   km: 45,  cargo: 'Beverages — 28 pallets' },
+    { from: 'Kodad, TG',         to: 'Nandigama, AP',       highway: 'NH-65',   km: 35,  cargo: 'Plastic Resin — Tanker' },
   ],
   'FP-505': [
-    { from: 'Mumbai, MH',      to: 'Pune, MH',         highway: 'NH-48',    km: 148, cargo: 'Pharmaceuticals — 12 pallets' },
-    { from: 'Mumbai, MH',      to: 'Nashik, MH',        highway: 'NH-160',   km: 167, cargo: 'Auto Components — Ford India' },
-    { from: 'Pune, MH',        to: 'Kolhapur, MH',      highway: 'NH-48',    km: 228, cargo: 'Textiles — 26 pallets' },
-    { from: 'Mumbai, MH',      to: 'Surat, GJ',         highway: 'NH-48',    km: 284, cargo: 'Consumer Goods — 20 pallets' },
-    { from: 'Nashik, MH',      to: 'Aurangabad, MH',    highway: 'NH-160',   km: 108, cargo: 'FMCG Goods — 18 pallets' },
-    { from: 'Pune, MH',        to: 'Solapur, MH',       highway: 'NH-65',    km: 246, cargo: 'Agricultural Produce' },
+    { from: 'Mumbai, MH',        to: 'Pune, MH',            highway: 'NH-48',   km: 148, cargo: 'Pharmaceuticals — 12 pallets' },
+    { from: 'Mumbai, MH',        to: 'Nashik, MH',          highway: 'NH-160',  km: 167, cargo: 'Auto Components — Bajaj Auto' },
+    { from: 'Pune, MH',          to: 'Kolhapur, MH',        highway: 'NH-48',   km: 228, cargo: 'Textiles — 26 pallets' },
+    { from: 'Mumbai, MH',        to: 'Surat, GJ',           highway: 'NH-48',   km: 284, cargo: 'Consumer Goods — 20 pallets' },
+    { from: 'Nashik, MH',        to: 'Aurangabad, MH',      highway: 'NH-160',  km: 108, cargo: 'FMCG Goods — 18 pallets' },
   ],
 };
 
@@ -96,24 +89,24 @@ const DRIVER_PROFILES: Record<string, {
   vehicleType: string;
 }> = {
   'FP-101': {
-    homeAddress: '2847 Mission St', city: 'San Francisco', stateCode: 'CA', zip: '94110',
-    phone: '+1 (415) 682-3947',     cdlNumber: 'CA-F22847319',  cdlClass: 'Class A CDL',
-    cdlExpiry: 'Mar 2026',          vehicleType: '18-Wheeler Flatbed',
+    homeAddress: '12, Connaught Place', city: 'Delhi', stateCode: 'DL', zip: '110001',
+    phone: '+91 98100 12345',     cdlNumber: 'DL-14-20210084731',  cdlClass: 'Heavy Motor Vehicle (HMV)',
+    cdlExpiry: 'Mar 2028',          vehicleType: '18-Wheeler Flatbed',
   },
   'FP-202': {
-    homeAddress: '1156 W Olympic Blvd', city: 'Los Angeles', stateCode: 'CA', zip: '90015',
-    phone: '+1 (213) 554-8821',         cdlNumber: 'CA-E19034521', cdlClass: 'Class A CDL',
-    cdlExpiry: 'Jul 2025',              vehicleType: 'Refrigerated Semi',
+    homeAddress: '45, MG Road', city: 'Bangalore', stateCode: 'KA', zip: '560001',
+    phone: '+91 98450 67890',         cdlNumber: 'KA-03-20190345210', cdlClass: 'Heavy Motor Vehicle (HMV)',
+    cdlExpiry: 'Jul 2029',              vehicleType: 'Refrigerated Semi',
   },
   'FP-303': {
-    homeAddress: '482 E 149th St', city: 'Bronx',    stateCode: 'NY', zip: '10455',
-    phone: '+1 (718) 334-9012',    cdlNumber: 'NY-J48291045', cdlClass: 'Class A CDL + Hazmat',
-    cdlExpiry: 'Nov 2025',         vehicleType: 'Tanker / Dry Van',
+    homeAddress: '88, Park Street', city: 'Kolkata',    stateCode: 'WB', zip: '700016',
+    phone: '+91 98300 54321',    cdlNumber: 'WB-01-20204829104', cdlClass: 'HMV + Hazardous Cargo License',
+    cdlExpiry: 'Nov 2027',         vehicleType: 'Tanker / Dry Van',
   },
   'FP-404': {
-    homeAddress: '3901 S Michigan Ave', city: 'Chicago', stateCode: 'IL', zip: '60653',
-    phone: '+1 (312) 774-2053',         cdlNumber: 'IL-H30281474', cdlClass: 'Class A CDL',
-    cdlExpiry: 'Feb 2026',              vehicleType: 'Enclosed Cargo Van',
+    homeAddress: '22, Banjara Hills', city: 'Hyderabad', stateCode: 'TG', zip: '500034',
+    phone: '+91 98490 98765',         cdlNumber: 'TG-09-20213028147', cdlClass: 'Medium Passenger/Goods Vehicle',
+    cdlExpiry: 'Feb 2029',              vehicleType: 'Enclosed Cargo Van',
   },
   'FP-505': {
     homeAddress: 'Plot 47, Andheri West', city: 'Mumbai', stateCode: 'MH', zip: '400053',
@@ -127,7 +120,7 @@ const getDriverProfile = (driverName: string, vehicleNumber: string) => {
   const p = DRIVER_PROFILES[vehicleNumber] ?? DRIVER_PROFILES['FP-101'];
   return {
     name: driverName,
-    id: `DRV-${vehicleNumber.replace('FP-', '')}-US`,
+    id: `DRV-${vehicleNumber.replace('FP-', '')}-IN`,
     homeAddress: `${p.homeAddress}, ${p.city}, ${p.stateCode} ${p.zip}`,
     city: `${p.city}, ${p.stateCode}`,
     vehicleType: p.vehicleType,
@@ -137,7 +130,7 @@ const getDriverProfile = (driverName: string, vehicleNumber: string) => {
     experience: `${3 + (seed % 8)} years`,
     rating: (4.1 + (seed % 9) * 0.1).toFixed(1),
     totalTrips: 120 + (seed % 300),
-    totalMiles: `${(9000 + (seed % 25000)).toLocaleString()} mi`,
+    totalMiles: `${(9000 + (seed % 25000)).toLocaleString()} km`,
     onTimeRate: `${82 + (seed % 15)}%`,
     phone: p.phone,
     status: 'Active',

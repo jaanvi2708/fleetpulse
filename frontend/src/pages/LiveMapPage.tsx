@@ -76,7 +76,7 @@ export const LiveMapPage: React.FC = () => {
           showHeatmap={showHeatmap} 
           showGeofences={showGeofences}
           height="100%" 
-          zoom={4}
+          zoom={5}
         />
 
         {/* Live HUD overlay on bottom left */}
