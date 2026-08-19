@@ -12,7 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
-  Settings
+  Settings,
+  Package
 } from 'lucide-react';
 import { useFleetStore } from '../store/fleetStore';
 
@@ -26,6 +27,18 @@ interface NavbarProps {
   onClose?: () => void;
 }
 
+const ROLE_LABELS: Record<string, string> = {
+  admin: 'Administrator',
+  driver: 'Driver',
+  user: 'Client',
+};
+
+const ROLE_COLORS: Record<string, string> = {
+  admin: 'text-fp-accent',
+  driver: 'text-fp-info',
+  user: 'text-fp-success',
+};
+
 export const Navbar: React.FC<NavbarProps> = ({ 
   currentTab, 
   setCurrentTab, 
@@ -36,19 +49,27 @@ export const Navbar: React.FC<NavbarProps> = ({
   onClose
 }) => {
   const logout = useFleetStore((state) => state.logout);
-  const userName = useFleetStore((state) => state.userName) || 'Ops Commander';
-  
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'fleet', label: 'Fleet Status', icon: Truck },
-    { id: 'shipments', label: 'Shipments', icon: Navigation },
-    { id: 'map', label: 'Live Map', icon: Map },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'alerts', label: 'Alerts', icon: AlertTriangle },
-    { id: 'insights', label: 'AI Insights', icon: Cpu },
-    { id: 'reports', label: 'Reports', icon: FileText },
-    { id: 'settings', label: 'Settings', icon: Settings },
+  const userName = useFleetStore((state) => state.userName) || 'User';
+  const userRole = useFleetStore((state) => state.userRole) || 'user';
+
+  // All possible nav items with role visibility
+  const allNavItems = [
+    { id: 'dashboard', label: 'Dashboard',    icon: LayoutDashboard, roles: ['admin', 'driver', 'user'] },
+    { id: 'fleet',     label: userRole === 'driver' ? 'My Vehicle' : 'Fleet Status', icon: Truck,    roles: ['admin', 'driver'] },
+    { id: 'shipments', label: userRole === 'user' ? 'My Shipments' : 'Shipments',    icon: userRole === 'user' ? Package : Navigation, roles: ['admin', 'driver', 'user'] },
+    { id: 'map',       label: 'Live Map',     icon: Map,           roles: ['admin', 'driver', 'user'] },
+    { id: 'analytics', label: 'Analytics',   icon: BarChart3,     roles: ['admin'] },
+    { id: 'alerts',    label: 'Alerts',       icon: AlertTriangle, roles: ['admin', 'driver', 'user'] },
+    { id: 'insights',  label: 'AI Insights',  icon: Cpu,           roles: ['admin'] },
+    { id: 'reports',   label: 'Reports',      icon: FileText,      roles: ['admin', 'driver', 'user'] },
+    { id: 'settings',  label: 'Settings',     icon: Settings,      roles: ['admin', 'driver', 'user'] },
   ];
+
+  // Filter nav items by current user role
+  const navItems = allNavItems.filter(item => item.roles.includes(userRole));
+
+  const roleLabel = ROLE_LABELS[userRole] || 'User';
+  const roleColor = ROLE_COLORS[userRole] || 'text-stone-400';
 
   return (
     <>
@@ -67,113 +88,134 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="hidden md:flex absolute top-6 -right-3 w-6 h-6 rounded-full border border-fp-border bg-fp-sidebar hover:bg-fp-card items-center justify-center text-stone-500 hover:text-stone-300 shadow-soft transition-colors z-50 select-none"
         >
-        {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
-      </button>
+          {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+        </button>
 
-      <div className="flex flex-col flex-1 py-5 overflow-hidden">
-        {/* Brand Header */}
-        <div className={`flex items-center gap-3 px-4 mb-6 select-none ${isCollapsed ? 'md:justify-center' : ''}`}>
-          <div className="relative shrink-0 w-8 h-8 flex items-center justify-center">
-            <div className="w-8 h-8 rounded-lg bg-fp-accent/15 border border-fp-accent/25 flex items-center justify-center">
-              <Radio className="w-4 h-4 text-fp-accent" />
-            </div>
-          </div>
-          <div className={`min-w-0 ${isCollapsed ? 'md:hidden' : ''}`}>
-            <h1 className="text-[15px] font-bold tracking-wide leading-none text-stone-200">
-              FleetPulse
-            </h1>
-            <span className="text-[9px] text-stone-500 uppercase tracking-widest font-medium">
-              Fleet Operations
-            </span>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setCurrentTab(item.id);
-                  if (onClose) onClose();
-                }}
-                title={isCollapsed ? item.label : undefined}
-                className={`flex items-center gap-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 select-none w-full ${
-                  isCollapsed ? 'md:justify-center md:px-0 px-3' : 'px-3'
-                } ${
-                  isActive
-                    ? 'nav-item-active'
-                    : 'text-stone-500 hover:text-stone-300 hover:bg-white/[0.03]'
-                }`}
-              >
-                <Icon className={`w-[18px] h-[18px] shrink-0 ${isActive ? 'text-fp-accent-light' : 'text-stone-600'}`} />
-                <span className={isCollapsed ? 'md:hidden' : ''}>{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* System Status */}
-        <div className={`px-3 mb-4 mt-2 ${isCollapsed ? 'md:hidden' : ''}`}>
-          <div className="sidebar-card p-3">
-            <p className="text-[9px] text-stone-500 font-semibold uppercase tracking-widest mb-2">System Status</p>
-            <div className="flex items-center gap-2.5">
-              <div className="relative w-10 h-10 shrink-0 flex items-center justify-center">
-                <div className="absolute w-10 h-10 rounded-full border border-fp-accent/15"></div>
-                <div className="absolute w-7 h-7 rounded-full border border-fp-accent/25"></div>
-                <div className="w-4 h-4 rounded-full bg-fp-accent/15 border border-fp-accent/40 flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 rounded-full bg-fp-accent"></div>
-                </div>
+        <div className="flex flex-col flex-1 py-5 overflow-hidden">
+          {/* Brand Header */}
+          <div className={`flex items-center gap-3 px-4 mb-4 select-none ${isCollapsed ? 'md:justify-center' : ''}`}>
+            <div className="relative shrink-0 w-8 h-8 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-fp-accent/15 border border-fp-accent/25 flex items-center justify-center">
+                <Radio className="w-4 h-4 text-fp-accent" />
               </div>
-              <div>
-                <p className="text-[11px] font-semibold text-fp-accent">Operational</p>
-                <div className="mt-1 space-y-0.5">
-                  <p className="flex items-center gap-1.5 text-[9px] text-stone-500">
-                    <span className="w-1 h-1 rounded-full bg-fp-accent"></span>
-                    Telemetry
-                    <span className="text-fp-accent font-semibold">Running</span>
-                  </p>
-                  <p className="flex items-center gap-1.5 text-[9px] text-stone-500">
-                    <span className={`w-1 h-1 rounded-full ${wsConnected ? 'bg-fp-success' : 'bg-fp-danger'}`}></span>
-                    Data Stream
-                    <span className={`${wsConnected ? 'text-fp-success' : 'text-fp-danger'} font-semibold`}>{wsConnected ? 'Live' : 'Offline'}</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="border-t border-fp-border bg-fp-sidebar p-3">
-        <div className={`flex items-center ${isCollapsed ? 'md:justify-center' : 'justify-between'} gap-2`}>
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-fp-accent/15 border border-fp-border flex items-center justify-center text-[11px] font-semibold text-stone-300 shrink-0 select-none">
-              {userName.charAt(0).toUpperCase()}
             </div>
             <div className={`min-w-0 ${isCollapsed ? 'md:hidden' : ''}`}>
-              <p className="text-[12px] font-medium text-stone-300 truncate">{userName}</p>
-              <p className="text-[9px] text-stone-600">Administrator</p>
+              <h1 className="text-[15px] font-bold tracking-wide leading-none text-stone-200">
+                FleetPulse
+              </h1>
+              <span className="text-[9px] text-stone-500 uppercase tracking-widest font-medium">
+                Fleet Operations
+              </span>
             </div>
           </div>
-          <button
-            onClick={() => {
-              logout();
-              if (onClose) onClose();
-            }}
-            title="Logout"
-            className={`shrink-0 p-1.5 rounded-lg text-stone-500 hover:text-fp-danger hover:bg-fp-danger/10 transition-colors ${isCollapsed ? 'md:hidden' : ''}`}
-          >
-            <LogOut className="w-3.5 h-3.5" />
-          </button>
+
+          {/* Role Access Badge */}
+          {!isCollapsed && (
+            <div className="px-4 mb-4">
+              <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider select-none ${
+                userRole === 'admin' ? 'bg-fp-accent/8 border-fp-accent/20 text-fp-accent' :
+                userRole === 'driver' ? 'bg-fp-info/8 border-fp-info/20 text-fp-info' :
+                'bg-fp-success/8 border-fp-success/20 text-fp-success'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+                  userRole === 'admin' ? 'bg-fp-accent' :
+                  userRole === 'driver' ? 'bg-fp-info' : 'bg-fp-success'
+                }`} />
+                {roleLabel} Access
+              </div>
+            </div>
+          )}
+
+          {/* Navigation */}
+          <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setCurrentTab(item.id);
+                    if (onClose) onClose();
+                  }}
+                  title={isCollapsed ? item.label : undefined}
+                  className={`flex items-center gap-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 select-none w-full ${
+                    isCollapsed ? 'md:justify-center md:px-0 px-3' : 'px-3'
+                  } ${
+                    isActive
+                      ? 'nav-item-active'
+                      : 'text-stone-500 hover:text-stone-300 hover:bg-white/[0.03]'
+                  }`}
+                >
+                  <Icon className={`w-[18px] h-[18px] shrink-0 ${isActive ? 'text-fp-accent-light' : 'text-stone-600'}`} />
+                  <span className={isCollapsed ? 'md:hidden' : ''}>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* System Status */}
+          <div className={`px-3 mb-4 mt-2 ${isCollapsed ? 'md:hidden' : ''}`}>
+            <div className="sidebar-card p-3">
+              <p className="text-[9px] text-stone-500 font-semibold uppercase tracking-widest mb-2">System Status</p>
+              <div className="flex items-center gap-2.5">
+                <div className="relative w-10 h-10 shrink-0 flex items-center justify-center">
+                  <div className="absolute w-10 h-10 rounded-full border border-fp-accent/15"></div>
+                  <div className="absolute w-7 h-7 rounded-full border border-fp-accent/25"></div>
+                  <div className="w-4 h-4 rounded-full bg-fp-accent/15 border border-fp-accent/40 flex items-center justify-center">
+                    <div className="w-1.5 h-1.5 rounded-full bg-fp-accent"></div>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold text-fp-accent">Operational</p>
+                  <div className="mt-1 space-y-0.5">
+                    <p className="flex items-center gap-1.5 text-[9px] text-stone-500">
+                      <span className="w-1 h-1 rounded-full bg-fp-accent"></span>
+                      Telemetry
+                      <span className="text-fp-accent font-semibold">Running</span>
+                    </p>
+                    <p className="flex items-center gap-1.5 text-[9px] text-stone-500">
+                      <span className={`w-1 h-1 rounded-full ${wsConnected ? 'bg-fp-success' : 'bg-fp-danger'}`}></span>
+                      Data Stream
+                      <span className={`${wsConnected ? 'text-fp-success' : 'text-fp-danger'} font-semibold`}>{wsConnected ? 'Live' : 'Offline'}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </aside>
-  </>
-);
+
+        {/* Footer */}
+        <div className="border-t border-fp-border bg-fp-sidebar p-3">
+          <div className={`flex items-center ${isCollapsed ? 'md:justify-center' : 'justify-between'} gap-2`}>
+            <div className="flex items-center gap-2 min-w-0">
+              <div className={`w-8 h-8 rounded-full border border-fp-border flex items-center justify-center text-[11px] font-semibold text-stone-300 shrink-0 select-none ${
+                userRole === 'admin' ? 'bg-fp-accent/15' :
+                userRole === 'driver' ? 'bg-fp-info/15' : 'bg-fp-success/15'
+              }`}>
+                {userName.charAt(0).toUpperCase()}
+              </div>
+              <div className={`min-w-0 ${isCollapsed ? 'md:hidden' : ''}`}>
+                <p className="text-[12px] font-medium text-stone-300 truncate">{userName}</p>
+                <p className={`text-[9px] font-semibold ${roleColor}`}>{roleLabel}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                logout();
+                if (onClose) onClose();
+              }}
+              title="Logout"
+              className={`shrink-0 p-1.5 rounded-lg text-stone-500 hover:text-fp-danger hover:bg-fp-danger/10 transition-colors ${isCollapsed ? 'md:hidden' : ''}`}
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
 };
 export default Navbar;
+

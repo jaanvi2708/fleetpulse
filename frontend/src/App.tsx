@@ -25,6 +25,7 @@ interface Toast {
 export const App: React.FC = () => {
   const isAuthenticated = useFleetStore((state) => state.isAuthenticated);
   const userName = useFleetStore((state) => state.userName) || 'Ops Commander';
+  const userRole = useFleetStore((state) => state.userRole) || 'user';
   const [authView, setAuthView] = useState<'login' | 'register'>('login');
   const [currentTab, setCurrentTab] = useState<string>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -49,8 +50,20 @@ export const App: React.FC = () => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
+  // Role-based tab access control
+  const allowedTabs: Record<string, string[]> = {
+    admin:  ['dashboard', 'fleet', 'shipments', 'map', 'analytics', 'alerts', 'insights', 'reports', 'settings'],
+    driver: ['dashboard', 'fleet', 'shipments', 'map', 'alerts', 'reports', 'settings'],
+    user:   ['dashboard', 'shipments', 'map', 'alerts', 'reports', 'settings'],
+  };
+  const permitted = allowedTabs[userRole] || allowedTabs['user'];
+
   // Render Page Content based on selected sidebar tab
   const renderTabContent = () => {
+    // Guard: redirect to dashboard if role not allowed
+    if (!permitted.includes(currentTab)) {
+      return <Dashboard setCurrentTab={setCurrentTab} />;
+    }
     switch (currentTab) {
       case 'dashboard':
         return <Dashboard setCurrentTab={setCurrentTab} />;

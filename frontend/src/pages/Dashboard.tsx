@@ -25,10 +25,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
   const vehicles = useFleetStore((state) => state.vehicles);
   const alerts = useFleetStore((state) => state.alerts);
   const stats = useFleetStore((state) => state.stats);
+  const shipments = useFleetStore((state) => state.shipments);
+  const userRole = useFleetStore((state) => state.userRole) || 'admin';
+  const userName = useFleetStore((state) => state.userName) || '';
   
   const setVehicles = useFleetStore((state) => state.setVehicles);
   const setAlerts = useFleetStore((state) => state.setAlerts);
   const setStats = useFleetStore((state) => state.setStats);
+  const setShipments = useFleetStore((state) => state.setShipments);
   const selectVehicle = useFleetStore((state) => state.selectVehicle);
   
   const [loading, setLoading] = useState(true);
@@ -44,14 +48,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
     const fetchDashboardData = async () => {
       try {
         const headers = { 'Authorization': `Bearer ${token}` };
-        const [statsRes, vehiclesRes, alertsRes] = await Promise.all([
+        const [statsRes, vehiclesRes, alertsRes, shipmentsRes] = await Promise.all([
           fetch('http://localhost:8000/api/dashboard/stats', { headers }),
           fetch('http://localhost:8000/api/vehicles', { headers }),
           fetch('http://localhost:8000/api/alerts', { headers }),
+          fetch('http://localhost:8000/api/shipments', { headers }),
         ]);
         if (statsRes.ok) setStats(await statsRes.json());
         if (vehiclesRes.ok) setVehicles(await vehiclesRes.json());
         if (alertsRes.ok) setAlerts(await alertsRes.json());
+        if (shipmentsRes.ok) setShipments(await shipmentsRes.json());
       } catch (err) {
         console.error('Dashboard load error:', err);
       } finally {
@@ -59,7 +65,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
       }
     };
     fetchDashboardData();
-  }, [token, setVehicles, setAlerts, setStats]);
+  }, [token, setVehicles, setAlerts, setStats, setShipments]);
 
   // Fleet health data
   const movingCount = vehicles.filter(v => v.status === 'Moving').length;
@@ -99,14 +105,312 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
 
   const recentAlerts = alerts.filter(a => !a.resolved).slice(0, 4);
 
+  // ── ROLE-SCOPED DATA ──────────────────────────────────────────────
+  // Driver: find their own vehicle
+  const myVehicle = userRole === 'driver'
+    ? vehicles.find(v => v.driver_name === userName) || null
+    : null;
 
+  // Driver: find active shipment for their vehicle
+  const myDriverShipment = myVehicle
+    ? shipments.find(s => s.vehicle_id === myVehicle.id && s.status !== 'Delivered') || null
+    : null;
 
+  // Driver: own alerts
+  const myDriverAlerts = myVehicle
+    ? alerts.filter(a => (a.vehicle_id === myVehicle.id || a.vehicle_number === myVehicle.vehicle_number) && !a.resolved)
+    : [];
+
+  // Client: find their shipments (first active)
+  const myClientShipment = userRole === 'user'
+    ? (shipments.find(s => s.status !== 'Delivered') || shipments[0] || null)
+    : null;
+
+  // Client: vehicle carrying their shipment
+  const myClientVehicle = myClientShipment
+    ? vehicles.find(v => v.id === myClientShipment.vehicle_id) || null
+    : null;
+
+  // Client: alerts for their shipment's vehicle
+  const myClientAlerts = myClientVehicle
+    ? alerts.filter(a => (a.vehicle_id === myClientVehicle.id || a.vehicle_number === myClientVehicle.vehicle_number) && !a.resolved)
+    : [];
+
+  // ── LOADING SCREEN ────────────────────────────────────────────────
   if (loading && vehicles.length === 0) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-fp-accent border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-stone-500 text-sm">Loading fleet data...</p>
+          <p className="text-stone-500 text-sm">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── DRIVER DASHBOARD ─────────────────────────────────────────────
+  if (userRole === 'driver') {
+    const v = myVehicle;
+    const s = myDriverShipment;
+    return (
+      <div className="space-y-5">
+        {/* Header */}
+        <div>
+          <h2 className="text-2xl font-semibold text-stone-200 leading-none">My Dashboard</h2>
+          <p className="text-stone-500 text-[13px] mt-1.5">Your vehicle status, active shipment and alerts</p>
+        </div>
+
+        {/* Vehicle KPIs */}
+        {v ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="cyber-card p-4">
+              <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider">Vehicle</p>
+              <p className="text-2xl font-black mt-1 text-stone-100">{v.vehicle_number}</p>
+            </div>
+            <div className="cyber-card p-4">
+              <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider">Status</p>
+              <p className={`text-xl font-black mt-1 ${
+                v.status === 'Moving' ? 'text-fp-success' : v.status === 'Idle' ? 'text-fp-info' : 'text-fp-danger'
+              }`}>{v.status}</p>
+            </div>
+            <div className="cyber-card p-4">
+              <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider">Speed</p>
+              <p className="text-2xl font-black mt-1 text-stone-100 tabular-nums">{v.speed.toFixed(1)} <span className="text-sm font-normal text-stone-400">km/h</span></p>
+            </div>
+            <div className="cyber-card p-4">
+              <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider">Fuel Level</p>
+              <p className={`text-2xl font-black mt-1 tabular-nums ${
+                v.fuel_level < 15 ? 'text-fp-danger' : v.fuel_level < 30 ? 'text-fp-warning' : 'text-fp-success'
+              }`}>{v.fuel_level.toFixed(1)}%</p>
+            </div>
+          </div>
+        ) : (
+          <div className="cyber-card p-6 text-center text-stone-500">
+            <p className="text-sm">No vehicle assigned to your account yet.</p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {/* Live Map — scoped to driver's vehicle */}
+          <div className="cyber-card p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-2 h-2 rounded-full bg-fp-accent"></span>
+              <h3 className="text-[12px] font-medium uppercase tracking-wider text-stone-400">My Vehicle Location</h3>
+            </div>
+            <LiveMap
+              vehicles={v ? [v] : []}
+              height="260px"
+              showGeofences={false}
+              onVehicleClick={() => setCurrentTab('fleet')}
+            />
+          </div>
+
+          {/* Active Shipment */}
+          <div className="cyber-card p-5 space-y-4">
+            <h3 className="text-[12px] font-medium uppercase tracking-wider text-stone-400">Active Shipment</h3>
+            {s ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-stone-500">Shipment No.</span>
+                  <span className="text-sm font-bold text-stone-200">{s.shipment_number}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-stone-500">Route</span>
+                  <span className="text-xs text-stone-300">{s.origin} → {s.destination}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-stone-500">Status</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                    s.status === 'In Transit' ? 'bg-fp-info/10 text-fp-info border border-fp-info/20' :
+                    s.status === 'Delayed' ? 'bg-fp-danger/10 text-fp-danger border border-fp-danger/20' :
+                    'bg-fp-surface text-stone-400 border border-fp-border'
+                  }`}>{s.status}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-stone-500">ETA</span>
+                  <span className="text-xs font-semibold text-stone-200">{s.eta || 'Calculating...'}</span>
+                </div>
+                {/* Progress Bar */}
+                <div>
+                  <div className="flex justify-between text-[10px] text-stone-500 mb-1">
+                    <span>Progress</span>
+                    <span>{s.progress.toFixed(1)}%</span>
+                  </div>
+                  <div className="h-1.5 bg-fp-border rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-fp-accent rounded-full transition-all duration-500"
+                      style={{ width: `${s.progress}%` }}
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="text-stone-500 text-sm text-center py-6">No active shipment assigned.</p>
+            )}
+          </div>
+        </div>
+
+        {/* Alerts for this driver */}
+        <div className="cyber-card p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-fp-warning" />
+            <h3 className="text-[12px] font-medium uppercase tracking-wider text-stone-400">My Alerts</h3>
+            {myDriverAlerts.length > 0 && (
+              <span className="ml-auto text-[10px] font-bold text-fp-danger bg-fp-danger/10 border border-fp-danger/20 px-2 py-0.5 rounded">
+                {myDriverAlerts.length} Active
+              </span>
+            )}
+          </div>
+          {myDriverAlerts.length === 0 ? (
+            <p className="text-stone-500 text-sm text-center py-4">No active alerts for your vehicle.</p>
+          ) : (
+            <div className="space-y-2">
+              {myDriverAlerts.slice(0, 5).map(alert => (
+                <div key={alert.id} className={`flex items-start gap-3 p-3 rounded-lg border ${
+                  alert.severity === 'Critical' ? 'bg-fp-danger/5 border-fp-danger/20' : 'bg-fp-warning/5 border-fp-warning/20'
+                }`}>
+                  <AlertTriangle className={`w-4 h-4 shrink-0 mt-0.5 ${
+                    alert.severity === 'Critical' ? 'text-fp-danger' : 'text-fp-warning'
+                  }`} />
+                  <div>
+                    <p className="text-[11px] font-bold text-stone-300">{alert.alert_type}</p>
+                    <p className="text-[11px] text-stone-500 mt-0.5">{alert.message}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── CLIENT DASHBOARD ─────────────────────────────────────────────
+  if (userRole === 'user') {
+    const s = myClientShipment;
+    const v = myClientVehicle;
+    return (
+      <div className="space-y-5">
+        {/* Header */}
+        <div>
+          <h2 className="text-2xl font-semibold text-stone-200 leading-none">My Shipment</h2>
+          <p className="text-stone-500 text-[13px] mt-1.5">Real-time tracking and delivery status</p>
+        </div>
+
+        {/* Shipment KPIs */}
+        {s ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="cyber-card p-4">
+              <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider">Shipment ID</p>
+              <p className="text-lg font-black mt-1 text-stone-100">{s.shipment_number}</p>
+            </div>
+            <div className="cyber-card p-4">
+              <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider">Status</p>
+              <p className={`text-xl font-black mt-1 ${
+                s.status === 'Delivered' ? 'text-fp-success' :
+                s.status === 'Delayed' ? 'text-fp-danger' :
+                s.status === 'In Transit' ? 'text-fp-info' : 'text-stone-300'
+              }`}>{s.status}</p>
+            </div>
+            <div className="cyber-card p-4">
+              <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider">Progress</p>
+              <p className="text-2xl font-black mt-1 text-stone-100 tabular-nums">{s.progress.toFixed(0)}%</p>
+            </div>
+            <div className="cyber-card p-4">
+              <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider">ETA</p>
+              <p className="text-sm font-black mt-1 text-stone-100">{s.eta || '—'}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="cyber-card p-6 text-center text-stone-500">
+            <p className="text-sm">No shipments found for your account.</p>
+          </div>
+        )}
+
+        {s && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Shipment Details */}
+            <div className="cyber-card p-5 space-y-4">
+              <h3 className="text-[12px] font-medium uppercase tracking-wider text-stone-400">Shipment Details</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between py-2 border-b border-fp-border/40">
+                  <span className="text-xs text-stone-500">Origin</span>
+                  <span className="text-xs font-semibold text-stone-200">{s.origin}</span>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-fp-border/40">
+                  <span className="text-xs text-stone-500">Destination</span>
+                  <span className="text-xs font-semibold text-stone-200">{s.destination}</span>
+                </div>
+                {v && (
+                  <div className="flex items-center justify-between py-2 border-b border-fp-border/40">
+                    <span className="text-xs text-stone-500">Carrier Vehicle</span>
+                    <span className="text-xs font-semibold text-stone-200">{v.vehicle_number}</span>
+                  </div>
+                )}
+                {v && (
+                  <div className="flex items-center justify-between py-2 border-b border-fp-border/40">
+                    <span className="text-xs text-stone-500">Driver</span>
+                    <span className="text-xs font-semibold text-stone-200">{v.driver_name}</span>
+                  </div>
+                )}
+                {/* Progress Bar */}
+                <div className="pt-2">
+                  <div className="flex justify-between text-[10px] text-stone-500 mb-1.5">
+                    <span>{s.origin}</span>
+                    <span>{s.destination}</span>
+                  </div>
+                  <div className="h-2 bg-fp-border rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-fp-accent rounded-full transition-all duration-500"
+                      style={{ width: `${s.progress}%` }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-stone-500 mt-1 text-center">{s.progress.toFixed(1)}% complete</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Live Map — scoped to carrier vehicle */}
+            <div className="cyber-card p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-2 h-2 rounded-full bg-fp-accent"></span>
+                <h3 className="text-[12px] font-medium uppercase tracking-wider text-stone-400">Live Shipment Location</h3>
+              </div>
+              <LiveMap
+                vehicles={v ? [v] : []}
+                height="260px"
+                showGeofences={false}
+                onVehicleClick={() => {}}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Delivery Alerts */}
+        <div className="cyber-card p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-fp-warning" />
+            <h3 className="text-[12px] font-medium uppercase tracking-wider text-stone-400">Delivery Alerts</h3>
+          </div>
+          {myClientAlerts.length === 0 ? (
+            <p className="text-stone-500 text-sm text-center py-4">No active alerts for your shipment.</p>
+          ) : (
+            <div className="space-y-2">
+              {myClientAlerts.map(alert => (
+                <div key={alert.id} className={`flex items-start gap-3 p-3 rounded-lg border ${
+                  alert.severity === 'Critical' ? 'bg-fp-danger/5 border-fp-danger/20' : 'bg-fp-warning/5 border-fp-warning/20'
+                }`}>
+                  <AlertTriangle className={`w-4 h-4 shrink-0 mt-0.5 ${
+                    alert.severity === 'Critical' ? 'text-fp-danger' : 'text-fp-warning'
+                  }`} />
+                  <div>
+                    <p className="text-[11px] font-bold text-stone-300">{alert.alert_type}</p>
+                    <p className="text-[11px] text-stone-500 mt-0.5">{alert.message}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );

@@ -9,6 +9,8 @@ export const Shipments: React.FC = () => {
   const shipments = useFleetStore((state) => state.shipments);
   const setShipments = useFleetStore((state) => state.setShipments);
   const vehicles = useFleetStore((state) => state.vehicles);
+  const userRole = useFleetStore((state) => state.userRole) || 'admin';
+  const userName = useFleetStore((state) => state.userName) || '';
   
   const selectedShipmentId = useFleetStore((state) => state.selectedShipmentId);
   const selectShipment = useFleetStore((state) => state.selectShipment);
@@ -47,7 +49,16 @@ export const Shipments: React.FC = () => {
     }
   }, [selectedShipmentId, shipments]);
 
-  const filteredShipments = shipments.filter((s) => {
+  // Role-scoped shipments: drivers see only their vehicle's shipments
+  const myVehicle = userRole === 'driver'
+    ? vehicles.find(v => v.driver_name === userName) || null
+    : null;
+
+  const roleFilteredShipments = userRole === 'driver' && myVehicle
+    ? shipments.filter(s => s.vehicle_id === myVehicle.id)
+    : shipments;
+
+  const filteredShipments = roleFilteredShipments.filter((s) => {
     const matchesSearch = 
       s.shipment_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.origin.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -72,10 +83,14 @@ export const Shipments: React.FC = () => {
       
       <div>
         <h2 className="text-2xl font-semibold text-stone-200">
-          Shipments
+          {userRole === 'user' ? 'My Shipments' : userRole === 'driver' ? 'My Active Shipments' : 'Shipments'}
         </h2>
         <p className="text-stone-500 text-xs mt-1">
-          Transit tracking and delivery status
+          {userRole === 'user'
+            ? 'Track your cargo and delivery status in real time'
+            : userRole === 'driver'
+            ? 'Shipments assigned to your vehicle'
+            : 'Transit tracking and delivery status'}
         </p>
       </div>
 

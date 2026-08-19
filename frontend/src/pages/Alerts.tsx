@@ -7,6 +7,10 @@ export const Alerts: React.FC = () => {
   const alerts = useFleetStore((state) => state.alerts);
   const setAlerts = useFleetStore((state) => state.setAlerts);
   const markAlertResolved = useFleetStore((state) => state.markAlertResolved);
+  const vehicles = useFleetStore((state) => state.vehicles);
+  const shipments = useFleetStore((state) => state.shipments);
+  const userRole = useFleetStore((state) => state.userRole) || 'admin';
+  const userName = useFleetStore((state) => state.userName) || '';
   
   const [searchTerm, setSearchTerm] = useState('');
   const [severityFilter, setSeverityFilter] = useState('All');
@@ -51,7 +55,25 @@ export const Alerts: React.FC = () => {
     }
   };
 
+  // Role-based alert scoping
+  const myVehicle = userRole === 'driver'
+    ? vehicles.find(v => v.driver_name === userName) || null
+    : null;
+  const myShipment = userRole === 'user'
+    ? (shipments.find(s => s.status !== 'Delivered') || shipments[0] || null)
+    : null;
+  const myClientVehicle = myShipment
+    ? vehicles.find(v => v.id === myShipment.vehicle_id) || null
+    : null;
+
   const filteredAlerts = alerts.filter((alert) => {
+    // First apply role scope
+    if (userRole === 'driver' && myVehicle) {
+      if (alert.vehicle_id !== myVehicle.id && alert.vehicle_number !== myVehicle.vehicle_number) return false;
+    } else if (userRole === 'user' && myClientVehicle) {
+      if (alert.vehicle_id !== myClientVehicle.id && alert.vehicle_number !== myClientVehicle.vehicle_number) return false;
+    }
+    // Then apply UI filters
     const matchesSearch = 
       (alert.vehicle_number && alert.vehicle_number.toLowerCase().includes(searchTerm.toLowerCase())) ||
       alert.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -73,12 +95,33 @@ export const Alerts: React.FC = () => {
       {/* Header */}
       <div>
         <h2 className="text-2xl font-semibold text-stone-200">
-          Alerts
+          {userRole === 'driver' ? 'My Vehicle Alerts' : userRole === 'user' ? 'Delivery Alerts' : 'Alerts'}
         </h2>
         <p className="text-stone-500 text-xs mt-1">
-          Monitor and resolve fleet safety alerts
+          {userRole === 'driver'
+            ? 'Safety and telemetry alerts for your assigned vehicle'
+            : userRole === 'user'
+            ? 'Alerts for the vehicle carrying your shipment'
+            : 'Monitor and resolve fleet safety alerts'}
         </p>
       </div>
+
+      {/* Role scope badge for non-admins */}
+      {userRole !== 'admin' && (
+        <div className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-xs ${
+          userRole === 'driver'
+            ? 'bg-fp-info/5 border-fp-info/20 text-fp-info'
+            : 'bg-fp-success/5 border-fp-success/20 text-fp-success'
+        }`}>
+          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+          <span>
+            {userRole === 'driver'
+              ? `Showing alerts for your vehicle${myVehicle ? ` (${myVehicle.vehicle_number})` : ''} only.`
+              : `Showing alerts for the vehicle carrying your shipment${myClientVehicle ? ` (${myClientVehicle.vehicle_number})` : ''}.`
+            }
+          </span>
+        </div>
+      )}
 
       {/* Controls Bar */}
       <div className="flex flex-col md:flex-row gap-3 items-center justify-between bg-fp-card p-4 border border-fp-border rounded-lg select-none">

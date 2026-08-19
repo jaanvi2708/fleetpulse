@@ -145,6 +145,8 @@ export const Fleet: React.FC = () => {
   const setVehicles = useFleetStore((state) => state.setVehicles);
   const selectedVehicleId = useFleetStore((state) => state.selectedVehicleId);
   const selectVehicle = useFleetStore((state) => state.selectVehicle);
+  const userRole = useFleetStore((state) => state.userRole) || 'admin';
+  const userName = useFleetStore((state) => state.userName) || '';
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -194,7 +196,12 @@ export const Fleet: React.FC = () => {
     else { setSortField(field); setSortOrder('asc'); }
   };
 
-  const filteredVehicles = vehicles
+  // Role-scoped vehicle list
+  const roleFilteredVehicles = userRole === 'driver'
+    ? vehicles.filter(v => v.driver_name === userName)
+    : vehicles;
+
+  const filteredVehicles = roleFilteredVehicles
     .filter(v => {
       const matchSearch =
         v.vehicle_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -245,21 +252,35 @@ export const Fleet: React.FC = () => {
       {/* Page Header */}
       <div>
         <h2 className="text-[26px] font-extrabold text-stone-200 uppercase tracking-tight leading-none">
-          Fleet Status
+          {userRole === 'driver' ? 'My Vehicle' : 'Fleet Status'}
         </h2>
         <p className="text-stone-500 text-[13px] mt-1.5">
-          Real-time telemetry, driver profiles & complete trip history
+          {userRole === 'driver'
+            ? 'Your assigned vehicle — real-time telemetry, trip history & details'
+            : 'Real-time telemetry, driver profiles & complete trip history'}
         </p>
       </div>
 
-      {/* Summary badges */}
+      {/* Role scope badge for drivers */}
+      {userRole === 'driver' && (
+        <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg border bg-fp-info/5 border-fp-info/20 text-fp-info text-xs">
+          <Truck className="w-3.5 h-3.5 shrink-0" />
+          <span>
+            {filteredVehicles.length > 0
+              ? `Showing your assigned vehicle: ${filteredVehicles[0].vehicle_number}`
+              : 'No vehicle assigned to your account yet.'}
+          </span>
+        </div>
+      )}
+
+      {/* Summary badges — scoped to roleFilteredVehicles */}
       <div className="flex items-center gap-3 flex-wrap">
         {[
-          { label: 'Total', count: vehicles.length, color: 'text-stone-300 bg-white/5 border-fp-border' },
-          { label: 'Moving', count: vehicles.filter(v => v.status === 'Moving').length, color: 'text-fp-success bg-fp-success/10 border-fp-success/15' },
-          { label: 'Idle', count: vehicles.filter(v => v.status === 'Idle').length, color: 'text-fp-info bg-fp-info/10 border-fp-info/15' },
-          { label: 'Stopped', count: vehicles.filter(v => v.status === 'Stopped' || v.status === 'Offline').length, color: 'text-fp-muted bg-fp-muted/10 border-fp-muted/15' },
-          { label: 'Delayed', count: vehicles.filter(v => v.status === 'Delayed').length, color: 'text-fp-danger bg-fp-danger/10 border-fp-danger/15' },
+          { label: 'Total', count: roleFilteredVehicles.length, color: 'text-stone-300 bg-white/5 border-fp-border' },
+          { label: 'Moving', count: roleFilteredVehicles.filter(v => v.status === 'Moving').length, color: 'text-fp-success bg-fp-success/10 border-fp-success/15' },
+          { label: 'Idle', count: roleFilteredVehicles.filter(v => v.status === 'Idle').length, color: 'text-fp-info bg-fp-info/10 border-fp-info/15' },
+          { label: 'Stopped', count: roleFilteredVehicles.filter(v => v.status === 'Stopped' || v.status === 'Offline').length, color: 'text-fp-muted bg-fp-muted/10 border-fp-muted/15' },
+          { label: 'Delayed', count: roleFilteredVehicles.filter(v => v.status === 'Delayed').length, color: 'text-fp-danger bg-fp-danger/10 border-fp-danger/15' },
         ].map(item => (
           <div key={item.label} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] font-semibold ${item.color}`}>
             <span className="font-black text-base leading-none">{item.count}</span>
