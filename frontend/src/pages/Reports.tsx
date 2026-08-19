@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { jsPDF } from 'jspdf';
 import { 
   FileText, 
   Filter, 
@@ -16,13 +17,12 @@ import {
   Database
 } from 'lucide-react';
 import { useFleetStore } from '../store/fleetStore';
-import { 
-  ResponsiveContainer, 
-  BarChart, Bar, XAxis, YAxis, Tooltip, Cell
-} from 'recharts';
+// Recharts replaced with custom CSS/SVG widgets
 
 export const Reports: React.FC = () => {
   const token = useFleetStore((state) => state.token);
+  const userRole = useFleetStore((state) => state.userRole);
+  const userName = useFleetStore((state) => state.userName);
   const [reportsData, setReportsData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVehicle, setSelectedVehicle] = useState<string>('all');
@@ -94,52 +94,132 @@ export const Reports: React.FC = () => {
   const handleDownload = () => {
     if (!reportsData) return;
     
-    let content = "";
-    let filename = `fleetpulse_report_${selectedVehicle}_${selectedTimeframe}`;
+    let filename = `fleetpulse_report_${selectedTimeframe}`;
+    if (selectedVehicle !== 'all') {
+      filename += `_${selectedVehicle}`;
+    }
     
     if (compileFormat === 'json') {
-      content = JSON.stringify(reportsData, null, 2);
-      filename += ".json";
+      const content = JSON.stringify(reportsData, null, 2);
+      const blob = new Blob([content], { type: 'application/json;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `${filename}.json`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } else if (compileFormat === 'csv') {
       const headers = "Vehicle,Driver,Status,TelemetryLogs,AvgSpeed,AvgFuel,Alerts\n";
       const rows = reportsData.vehicle_summaries.map((v: any) => 
         `"${v.vehicle_number}","${v.driver_name}","${v.status}",${v.log_count},${v.avg_speed},${v.avg_fuel_level},${v.alerts_count}`
       ).join("\n");
-      content = headers + rows;
-      filename += ".csv";
+      const content = headers + rows;
+      const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `${filename}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } else {
-      // Mock PDF export formatting
-      content = `==================================================\n` +
-                `         FLEETPULSE LOGISTICS OPERATIONS SYSTEM  \n` +
-                `               FLEET MONITORING REPORT           \n` +
-                `==================================================\n` +
-                `Generated At: ${new Date().toLocaleString()}\n` +
-                `Selected Vehicle Filter: ${selectedVehicle}\n` +
-                `Total Telemetry Events Logged: ${reportsData.total_telemetry_count}\n` +
-                `--------------------------------------------------\n\n` +
-                `FLEET VEHICLE SUMMARIES:\n` +
-                reportsData.vehicle_summaries.map((v: any) => 
-                  `- ${v.vehicle_number} (Driver: ${v.driver_name}) | Status: ${v.status} | Avg Speed: ${v.avg_speed} km/h | Avg Fuel: ${v.avg_fuel_level}%`
-                ).join("\n") + "\n\n" +
-                `ALERT DISPATCH LOGS SUMMARY:\n` +
-                reportsData.alert_summary.map((a: any) => 
-                  `- ${a.type}: ${a.count} occurrences`
-                ).join("\n") + "\n\n" +
-                `==================================================\n` +
-                `          END OF VERIFIED REPORT INDEX            \n` +
-                `==================================================`;
-      filename += ".txt";
+      // PDF generation using jsPDF
+      const doc = new jsPDF();
+      
+      // Header styles and structure
+      doc.setFillColor(15, 23, 42); // slate-900 (matching dark-mode theme)
+      doc.rect(0, 0, 210, 40, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.text("FLEETPULSE", 15, 20);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text("SECURE CYBER-LOGISTICS FLEET REPORT", 15, 30);
+      
+      // Right side metadata
+      doc.setFontSize(9);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, 130, 20);
+      doc.text(`Filter: ${selectedVehicle.toUpperCase()}`, 130, 26);
+      doc.text(`Timeframe: ${selectedTimeframe.toUpperCase()}`, 130, 32);
+      
+      // Body content
+      doc.setTextColor(15, 23, 42); // reset text color to dark slate
+      
+      // Stats summary block
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text("Executive Summary", 15, 55);
+      
+      doc.setDrawColor(226, 232, 240); // slate-200 border
+      doc.line(15, 58, 195, 58);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(`Total Telemetry Datapoints Checked: ${reportsData.total_telemetry_count}`, 15, 66);
+      doc.text(`Total Registered Fleet Operators: ${reportsData.vehicle_summaries.length}`, 15, 73);
+      
+      // Alert Summary block
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text("Alert Dispatch Summary Logs", 15, 88);
+      doc.line(15, 91, 195, 91);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      let alertY = 99;
+      reportsData.alert_summary.forEach((a: any) => {
+        doc.text(`- ${a.type}: ${a.count} alerts dispatched`, 20, alertY);
+        alertY += 7;
+      });
+      
+      // Fleet Vehicle Details Table
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text("Detailed Vehicle Summaries", 15, alertY + 10);
+      doc.line(15, alertY + 13, 195, alertY + 13);
+      
+      // Table headers
+      let tableY = alertY + 22;
+      doc.setFontSize(9);
+      doc.text("Vehicle", 15, tableY);
+      doc.text("Driver Name", 40, tableY);
+      doc.text("Status", 85, tableY);
+      doc.text("Avg Speed", 115, tableY);
+      doc.text("Avg Fuel", 145, tableY);
+      doc.text("Alerts", 175, tableY);
+      doc.line(15, tableY + 3, 195, tableY + 3);
+      
+      // Table rows
+      doc.setFont("helvetica", "normal");
+      let rowY = tableY + 10;
+      reportsData.vehicle_summaries.forEach((v: any) => {
+        // Handle page overflow if necessary
+        if (rowY > 275) {
+          doc.addPage();
+          rowY = 20;
+        }
+        doc.text(v.vehicle_number, 15, rowY);
+        doc.text(v.driver_name, 40, rowY);
+        doc.text(v.status, 85, rowY);
+        doc.text(`${v.avg_speed} km/h`, 115, rowY);
+        doc.text(`${v.avg_fuel_level}%`, 145, rowY);
+        doc.text(String(v.alerts_count), 175, rowY);
+        rowY += 8;
+      });
+      
+      // Secure Footer Signature
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184); // slate-400
+      doc.text("=========================================================================", 15, 280);
+      doc.text("This document is generated by the verified FleetPulse automated cyber-logistics platform.", 15, 284);
+      
+      doc.save(`${filename}.pdf`);
     }
-
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   if (loading || !reportsData) {
@@ -203,6 +283,28 @@ export const Reports: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* ── RBAC CONTEXT BANNER ── */}
+      {userRole && userRole !== 'admin' && (
+        <div className={`flex items-start gap-3 px-4 py-3 rounded-lg border text-xs ${
+          userRole === 'driver'
+            ? 'bg-fp-info/5 border-fp-info/20 text-fp-info'
+            : 'bg-fp-accent/5 border-fp-accent/20 text-fp-accent-light'
+        }`}>
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold uppercase tracking-wide">
+              {userRole === 'driver' ? 'Driver View' : 'Client View'} — Restricted Access
+            </span>
+            <p className="text-stone-400 mt-0.5">
+              {userRole === 'driver'
+                ? `You are viewing telemetry data for your assigned vehicle only. Reports generated will be scoped to ${userName}'s fleet data.`
+                : `You are viewing telemetry for your associated shipments only. Report scope is limited to vehicles carrying your cargo.`
+              }
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── STATS HUB ── */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -537,44 +639,38 @@ export const Reports: React.FC = () => {
               Incidents & Warnings Frequency
             </h3>
 
-            <div className="h-44 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={reportsData.alert_summary} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                  <XAxis 
-                    dataKey="type" 
-                    stroke="#555550" 
-                    fontSize={9} 
-                    fontWeight="bold" 
-                    tickLine={false} 
-                  />
-                  <YAxis 
-                    stroke="#555550" 
-                    fontSize={9} 
-                    tickLine={false} 
-                    allowDecimals={false} 
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#222220',
-                      border: '1px solid #333330',
-                      borderRadius: '8px',
-                      fontSize: '10px',
-                      color: '#d4d4cc',
-                    }}
-                    cursor={{ fill: 'rgba(255, 255, 255, 0.02)' }}
-                  />
-                  <Bar dataKey="count" radius={[4, 4, 0, 0]} fill="#7c8c6e">
-                    {reportsData.alert_summary.map((entry: any, index: number) => {
-                      const colors: Record<string, string> = {
-                        "Speeding": "#b07070",
-                        "Low Fuel": "#c4956a",
-                        "Offline": "#8a9bae"
-                      };
-                      return <Cell key={`cell-${index}`} fill={colors[entry.type] || "#7c8c6e"} />;
-                    })}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="h-44 flex flex-col justify-end">
+              <div className="flex justify-between items-end h-36 px-4 relative">
+                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                  <div className="border-b border-stone-850 w-full h-0"></div>
+                  <div className="border-b border-stone-850 w-full h-0"></div>
+                  <div className="border-b border-stone-850 w-full h-0"></div>
+                </div>
+                {reportsData.alert_summary.map((entry: any, index: number) => {
+                  const colors: Record<string, string> = {
+                    "Speeding": "#b07070",
+                    "Low Fuel": "#c4956a",
+                    "Offline": "#8a9bae",
+                    "Route Deviation": "#a0937d"
+                  };
+                  const color = colors[entry.type] || "#7c8c6e";
+                  const maxCount = Math.max(...reportsData.alert_summary.map((a: any) => a.count), 1);
+                  const heightPercent = (entry.count / maxCount) * 100;
+                  return (
+                    <div key={index} className="flex flex-col items-center flex-1 group z-10 mx-2">
+                      <span className="text-[10px] text-stone-400 font-mono mb-1">
+                        {entry.count}
+                      </span>
+                      <div 
+                        style={{ height: `${Math.max(8, heightPercent)}%`, backgroundColor: color }} 
+                        className="w-8 rounded-t transition-all duration-300 hover:brightness-110"
+                        title={`${entry.type}: ${entry.count}`}
+                      />
+                      <span className="text-[9px] text-stone-500 mt-2 font-mono uppercase tracking-wider text-center">{entry.type}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>

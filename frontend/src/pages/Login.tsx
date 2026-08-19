@@ -41,7 +41,7 @@ export const Login: React.FC<LoginProps> = ({ onRegisterRedirect }) => {
       }
       
       const userData = await userResponse.json();
-      login(data.access_token, userData.email, userData.full_name || 'Administrator');
+      login(data.access_token, userData.email, userData.full_name || 'Administrator', userData.role || 'user');
     } catch (err: any) {
       setError(err.message || 'Connection failed.');
     } finally {
@@ -68,12 +68,24 @@ export const Login: React.FC<LoginProps> = ({ onRegisterRedirect }) => {
         </div>
 
         {/* Demo Credentials */}
-        <div className="mb-6 p-3 rounded-lg bg-fp-accent/5 border border-fp-accent/15 flex gap-3 text-xs text-stone-400">
-          <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-fp-accent" />
-          <div>
-            <p className="font-medium text-stone-300">Demo Credentials</p>
-            <p>Email: <span className="text-stone-200">admin@fleetpulse.com</span></p>
-            <p>Password: <span className="text-stone-200">admin123</span></p>
+        <div className="mb-6 p-3 rounded-lg bg-fp-accent/5 border border-fp-accent/15 text-xs text-stone-400 space-y-2">
+          <div className="flex gap-3">
+            <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-fp-accent" />
+            <p className="font-medium text-stone-300">Demo Credentials (password: <span className="text-stone-200 font-mono">admin123</span>)</p>
+          </div>
+          <div className="grid grid-cols-1 gap-1 pl-7">
+            <div className="flex justify-between items-center py-1 border-b border-fp-border/30">
+              <span className="text-[10px] font-bold uppercase text-fp-accent tracking-wide">Admin</span>
+              <button onClick={() => setEmail('admin@fleetpulse.com')} className="text-stone-300 hover:text-stone-100 font-mono text-[10px] hover:underline">admin@fleetpulse.com</button>
+            </div>
+            <div className="flex justify-between items-center py-1 border-b border-fp-border/30">
+              <span className="text-[10px] font-bold uppercase text-fp-info tracking-wide">Driver</span>
+              <button onClick={() => setEmail('aarav@fleetpulse.com')} className="text-stone-300 hover:text-stone-100 font-mono text-[10px] hover:underline">aarav@fleetpulse.com</button>
+            </div>
+            <div className="flex justify-between items-center py-1">
+              <span className="text-[10px] font-bold uppercase text-fp-success tracking-wide">Client</span>
+              <button onClick={() => setEmail('user1@fleetpulse.com')} className="text-stone-300 hover:text-stone-100 font-mono text-[10px] hover:underline">user1@fleetpulse.com</button>
+            </div>
           </div>
         </div>
 

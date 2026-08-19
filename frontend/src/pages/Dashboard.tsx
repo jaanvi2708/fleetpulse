@@ -7,20 +7,14 @@ import {
   Activity, 
   AlertTriangle,
   ArrowRight,
-  Cpu,
   ChevronDown,
   Search,
   Bell,
+  Cpu,
 } from 'lucide-react';
 import { useFleetStore } from '../store/fleetStore';
 import { StatCard } from '../components/StatCard';
 import { LiveMap } from '../components/LiveMap';
-import { 
-  ResponsiveContainer, 
-  PieChart, Pie, Cell, Tooltip,
-  AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  BarChart, Bar
-} from 'recharts';
 
 interface DashboardProps {
   setCurrentTab: (tab: string) => void;
@@ -105,16 +99,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
 
   const recentAlerts = alerts.filter(a => !a.resolved).slice(0, 4);
 
-  const tooltipStyle = {
-    contentStyle: {
-      backgroundColor: '#222220',
-      border: '1px solid #333330',
-      borderRadius: '8px',
-      fontSize: '11px',
-      color: '#d4d4cc',
-    },
-    labelStyle: { color: '#8a8a80', fontSize: '10px', fontWeight: 'bold' as const },
-  };
+
 
   if (loading && vehicles.length === 0) {
     return (
@@ -251,7 +236,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
               vehicles={vehicles} 
               height="380px" 
               showGeofences={true} 
-              onVehicleClick={(v) => { 
+              onVehicleClick={(v: any) => { 
                 selectVehicle(v.id); 
                 setCurrentTab('fleet'); 
               }} 
@@ -293,27 +278,44 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
                 <div className="flex items-center gap-1.5"><span className="w-4 h-0.5 bg-fp-danger inline-block rounded"></span><span className="text-[10px] text-stone-500">Delayed</span></div>
               </div>
 
-              <div className="h-44">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={deliveryData} margin={{ top: 5, right: 5, left: -28, bottom: 0 }}>
+              <div className="h-44 flex flex-col justify-end">
+                <div className="h-36 relative w-full">
+                  <svg className="w-full h-full absolute inset-0" viewBox="0 0 500 120" preserveAspectRatio="none">
                     <defs>
                       <linearGradient id="gradOnTime" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#7c8c6e" stopOpacity={0.15} />
+                        <stop offset="5%" stopColor="#7c8c6e" stopOpacity={0.2} />
                         <stop offset="95%" stopColor="#7c8c6e" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="gradDelayed" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#b07070" stopOpacity={0.1} />
+                        <stop offset="5%" stopColor="#b07070" stopOpacity={0.15} />
                         <stop offset="95%" stopColor="#b07070" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333330" />
-                    <XAxis dataKey="name" stroke="#6b6b64" fontSize={9} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#6b6b64" fontSize={9} tickLine={false} axisLine={false} domain={[0, 100]} />
-                    <Tooltip {...tooltipStyle} formatter={(value: any, name: any) => [`${value}%`, name === 'onTime' ? 'On-Time' : 'Delayed']} />
-                    <Area type="monotone" dataKey="onTime" stroke="#7c8c6e" strokeWidth={1.5} fill="url(#gradOnTime)" dot={{ fill: '#7c8c6e', strokeWidth: 0, r: 2.5 }} activeDot={{ r: 3.5 }} />
-                    <Area type="monotone" dataKey="delayed" stroke="#b07070" strokeWidth={1.5} fill="url(#gradDelayed)" dot={{ fill: '#b07070', strokeWidth: 0, r: 2.5 }} activeDot={{ r: 3.5 }} />
-                  </AreaChart>
-                </ResponsiveContainer>
+                    
+                    {/* Grid lines */}
+                    <line x1="0" y1="20" x2="500" y2="20" stroke="#333" strokeDasharray="2 2" />
+                    <line x1="0" y1="60" x2="500" y2="60" stroke="#333" strokeDasharray="2 2" />
+                    <line x1="0" y1="100" x2="500" y2="100" stroke="#333" />
+
+                    {/* Area fills */}
+                    {(() => {
+                      const pointsOnTime = deliveryData.map((d, i) => `${(i/6)*500},${120 - (d.onTime/100)*100 - 10}`);
+                      const pointsDelayed = deliveryData.map((d, i) => `${(i/6)*500},${120 - (d.delayed/100)*100 - 10}`);
+                      return (
+                        <>
+                          <path d={`M 0,120 L ${pointsOnTime.join(' L ')} L 500,120 Z`} fill="url(#gradOnTime)" />
+                          <path d={`M ${pointsOnTime.join(' L ')}`} stroke="#7c8c6e" strokeWidth="2" fill="none" />
+                          
+                          <path d={`M 0,120 L ${pointsDelayed.join(' L ')} L 500,120 Z`} fill="url(#gradDelayed)" />
+                          <path d={`M ${pointsDelayed.join(' L ')}`} stroke="#b07070" strokeWidth="1.5" fill="none" />
+                        </>
+                      );
+                    })()}
+                  </svg>
+                </div>
+                <div className="flex justify-between text-[9px] text-stone-500 mt-2 px-1 font-mono uppercase">
+                  {deliveryData.map((d, i) => <span key={i}>{d.name}</span>)}
+                </div>
               </div>
             </div>
 
@@ -347,17 +349,35 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
                 </div>
               </div>
 
-              <div className="h-28">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={fuelData} margin={{ top: 0, right: 0, left: -28, bottom: 0 }} barSize={6} barGap={2}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333330" />
-                    <XAxis dataKey="day" stroke="#6b6b64" fontSize={9} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#6b6b64" fontSize={9} tickLine={false} axisLine={false} />
-                    <Tooltip {...tooltipStyle} />
-                    <Bar dataKey="fuel" fill="#8a9bae" fillOpacity={0.6} radius={[2,2,0,0]} />
-                    <Bar dataKey="efficiency" fill="#a0937d" fillOpacity={0.6} radius={[2,2,0,0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="h-28 flex flex-col justify-end">
+                <div className="flex justify-between items-end h-20 px-1 relative">
+                  <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                    <div className="border-b border-stone-850 w-full h-0"></div>
+                    <div className="border-b border-stone-850 w-full h-0"></div>
+                    <div className="border-b border-stone-850 w-full h-0"></div>
+                  </div>
+                  {fuelData.map((d, i) => {
+                    const fuelHeight = (d.fuel / 1000) * 100;
+                    const effHeight = (d.efficiency / 1000) * 100;
+                    return (
+                      <div key={i} className="flex flex-col items-center flex-1 group z-10">
+                        <div className="flex gap-1 items-end h-12 w-full justify-center">
+                          <div 
+                            style={{ height: `${Math.max(5, fuelHeight)}%` }} 
+                            className="w-1.5 bg-[#8a9bae] hover:bg-[#8a9bae]/90 rounded-t transition-all duration-300"
+                            title={`Fuel: ${d.fuel}L`}
+                          />
+                          <div 
+                            style={{ height: `${Math.max(5, effHeight)}%` }} 
+                            className="w-1.5 bg-[#a0937d] hover:bg-[#a0937d]/90 rounded-t transition-all duration-300"
+                            title={`Efficiency: ${d.efficiency} pts`}
+                          />
+                        </div>
+                        <span className="text-[9px] text-stone-500 mt-2 font-mono">{d.day}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
@@ -428,22 +448,36 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
 
             <div className="flex items-center gap-4">
               <div className="relative w-[90px] h-[90px] shrink-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={healthData}
-                      cx="50%" cy="50%"
-                      innerRadius={30} outerRadius={44}
-                      paddingAngle={2}
-                      dataKey="value"
-                      strokeWidth={0}
-                    >
-                      {healthData.map((entry, i) => (
-                        <Cell key={i} fill={entry.color} />
+                {(() => {
+                  let accumulatedPercent = 0;
+                  const healthSegments = healthData.map(item => {
+                    const val = item.value || 0;
+                    const percent = totalVehicles > 0 ? (val / totalVehicles) * 100 : 0;
+                    const strokeDasharray = `${(percent / 100) * 220} 220`;
+                    const strokeDashoffset = `${-(accumulatedPercent / 100) * 220}`;
+                    accumulatedPercent += percent;
+                    return { ...item, strokeDasharray, strokeDashoffset };
+                  });
+                  return (
+                    <svg width="90" height="90" viewBox="0 0 100 100" className="transform -rotate-90">
+                      <circle cx="50" cy="50" r="35" fill="transparent" stroke="#222" strokeWidth="12" />
+                      {healthSegments.map((seg, idx) => (
+                        <circle
+                          key={idx}
+                          cx="50"
+                          cy="50"
+                          r="35"
+                          fill="transparent"
+                          stroke={seg.color}
+                          strokeWidth="12"
+                          strokeDasharray={seg.strokeDasharray}
+                          strokeDashoffset={seg.strokeDashoffset}
+                          className="transition-all duration-500"
+                        />
                       ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
+                    </svg>
+                  );
+                })()}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-[16px] font-semibold text-stone-200">{totalVehicles}</span>
                   <span className="text-[8px] text-stone-500 text-center leading-tight">Total<br/>Vehicles</span>

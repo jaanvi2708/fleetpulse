@@ -9,10 +9,20 @@ const isLocalhost =
   window.location.hostname === '127.0.0.1';
 
 // Seed Data
-const MOCK_USER = {
-  email: 'admin@fleetpulse.com',
-  full_name: 'Fleet Operations Command'
-};
+const MOCK_USERS_DB = [
+  { email: 'admin@fleetpulse.com', full_name: 'Fleet Operations Command', role: 'admin' },
+  { email: 'aarav@fleetpulse.com', full_name: 'Aarav Mehta', role: 'driver' },
+  { email: 'priya@fleetpulse.com', full_name: 'Priya Nair', role: 'driver' },
+  { email: 'rohan@fleetpulse.com', full_name: 'Rohan Deshmukh', role: 'driver' },
+  { email: 'karan@fleetpulse.com', full_name: 'Karan Johar', role: 'driver' },
+  { email: 'arjun@fleetpulse.com', full_name: 'Arjun Sharma', role: 'driver' },
+  { email: 'user1@fleetpulse.com', full_name: 'User One', role: 'user', vehicle_ids: [1] },
+  { email: 'user2@fleetpulse.com', full_name: 'User Two', role: 'user', vehicle_ids: [2] },
+  { email: 'user3@fleetpulse.com', full_name: 'User Three', role: 'user', vehicle_ids: [3] },
+  { email: 'user4@fleetpulse.com', full_name: 'User Four', role: 'user', vehicle_ids: [5] }
+];
+
+let loggedInUser = MOCK_USERS_DB[0];
 
 const ROUTES: Record<string, [number, number][]> = {
   "FP-101": [
@@ -215,7 +225,9 @@ const enableMockInterceptor = () => {
       // POST /auth/login
       if (path.startsWith('/auth/login')) {
         const body = JSON.parse(init?.body as string || '{}');
-        if (body.email === 'admin@fleetpulse.com' && body.password === 'admin123') {
+        const userFound = MOCK_USERS_DB.find(u => u.email === body.email);
+        if (userFound && body.password === 'admin123') {
+          loggedInUser = userFound;
           return new Response(JSON.stringify({
             access_token: 'fake_jwt_token_for_demo_mode',
             token_type: 'bearer'
@@ -227,7 +239,7 @@ const enableMockInterceptor = () => {
 
       // GET /auth/me
       if (path.startsWith('/auth/me')) {
-        return new Response(JSON.stringify(MOCK_USER), { status: 200 });
+        return new Response(JSON.stringify(loggedInUser), { status: 200 });
       }
 
       // GET /dashboard/stats
@@ -292,29 +304,55 @@ const enableMockInterceptor = () => {
 
       // GET /reports
       if (path.startsWith('/reports')) {
+        let summaries = [
+          { vehicle_id: 1, vehicle_number: "FP-101", driver_name: "Aarav Mehta", status: "Moving", log_count: 450, avg_speed: 72.5, avg_fuel_level: 84.2, alerts_count: 0 },
+          { vehicle_id: 2, vehicle_number: "FP-202", driver_name: "Priya Nair", status: "Idle", log_count: 320, avg_speed: 0.0, avg_fuel_level: 48.9, alerts_count: 0 },
+          { vehicle_id: 3, vehicle_number: "FP-303", driver_name: "Rohan Deshmukh", status: "Moving", log_count: 280, avg_speed: 62.0, avg_fuel_level: 12.8, alerts_count: 1 },
+          { vehicle_id: 4, vehicle_number: "FP-404", driver_name: "Karan Johar", status: "Offline", log_count: 150, avg_speed: 0.0, avg_fuel_level: 92.0, alerts_count: 1 },
+          { vehicle_id: 5, vehicle_number: "FP-505", driver_name: "Arjun Sharma", status: "Moving", log_count: 510, avg_speed: 98.6, avg_fuel_level: 67.5, alerts_count: 1 }
+        ];
+
+        let logs = Array.from({ length: 25 }, (_, i) => ({
+          id: i + 1,
+          timestamp: new Date(Date.now() - i * 12 * 60000).toISOString(),
+          vehicle_number: ["FP-101", "FP-202", "FP-303", "FP-404", "FP-505"][i % 5],
+          driver_name: ["Aarav Mehta", "Priya Nair", "Rohan Deshmukh", "Karan Johar", "Arjun Sharma"][i % 5],
+          latitude: [28.6139, 12.9716, 22.5726, 17.3850, 19.0760][i % 5] + (i * 0.005),
+          longitude: [77.2090, 77.5946, 88.3639, 78.4867, 72.8777][i % 5] + (i * 0.005),
+          speed: [72.5, 0.0, 62.0, 0.0, 98.6][i % 5],
+          fuel_level: [84.2, 48.9, 12.8, 92.0, 67.5][i % 5]
+        }));
+
+        let speedingCount = 1;
+        let fuelCount = 1;
+        let offlineCount = 1;
+
+        if (loggedInUser.role === 'driver') {
+          summaries = summaries.filter(s => s.driver_name === loggedInUser.full_name);
+          logs = logs.filter(l => l.driver_name === loggedInUser.full_name);
+          speedingCount = loggedInUser.full_name === "Arjun Sharma" ? 1 : 0;
+          fuelCount = loggedInUser.full_name === "Rohan Deshmukh" ? 1 : 0;
+          offlineCount = loggedInUser.full_name === "Karan Johar" ? 1 : 0;
+        } else if (loggedInUser.role === 'user') {
+          const userVIds = (loggedInUser as any).vehicle_ids || [];
+          const vNums = summaries.filter(s => userVIds.includes(s.vehicle_id)).map(s => s.vehicle_number);
+          summaries = summaries.filter(s => userVIds.includes(s.vehicle_id));
+          logs = logs.filter(l => vNums.includes(l.vehicle_number));
+          speedingCount = vNums.includes("FP-505") ? 1 : 0;
+          fuelCount = vNums.includes("FP-303") ? 1 : 0;
+          offlineCount = vNums.includes("FP-404") ? 1 : 0;
+        }
+
+        const totalTelemetry = summaries.reduce((acc, s) => acc + s.log_count, 0);
+
         return new Response(JSON.stringify({
-          total_telemetry_count: 2450,
-          vehicle_summaries: [
-            { vehicle_id: 1, vehicle_number: "FP-101", driver_name: "Aarav Mehta", status: "Moving", log_count: 450, avg_speed: 72.5, avg_fuel_level: 84.2, alerts_count: 0 },
-            { vehicle_id: 2, vehicle_number: "FP-202", driver_name: "Priya Nair", status: "Idle", log_count: 320, avg_speed: 0.0, avg_fuel_level: 48.9, alerts_count: 0 },
-            { vehicle_id: 3, vehicle_number: "FP-303", driver_name: "Rohan Deshmukh", status: "Moving", log_count: 280, avg_speed: 62.0, avg_fuel_level: 12.8, alerts_count: 1 },
-            { vehicle_id: 4, vehicle_number: "FP-404", driver_name: "Karan Johar", status: "Offline", log_count: 150, avg_speed: 0.0, avg_fuel_level: 92.0, alerts_count: 1 },
-            { vehicle_id: 5, vehicle_number: "FP-505", driver_name: "Arjun Sharma", status: "Moving", log_count: 510, avg_speed: 98.6, avg_fuel_level: 67.5, alerts_count: 1 }
-          ],
-          recent_telemetry: Array.from({ length: 25 }, (_, i) => ({
-            id: i + 1,
-            timestamp: new Date(Date.now() - i * 12 * 60000).toISOString(),
-            vehicle_number: ["FP-101", "FP-202", "FP-303", "FP-404", "FP-505"][i % 5],
-            driver_name: ["Aarav Mehta", "Priya Nair", "Rohan Deshmukh", "Karan Johar", "Arjun Sharma"][i % 5],
-            latitude: [28.6139, 12.9716, 22.5726, 17.3850, 19.0760][i % 5] + (i * 0.005),
-            longitude: [77.2090, 77.5946, 88.3639, 78.4867, 72.8777][i % 5] + (i * 0.005),
-            speed: [72.5, 0.0, 62.0, 0.0, 98.6][i % 5],
-            fuel_level: [84.2, 48.9, 12.8, 92.0, 67.5][i % 5]
-          })),
+          total_telemetry_count: totalTelemetry,
+          vehicle_summaries: summaries,
+          recent_telemetry: logs,
           alert_summary: [
-            { type: "Speeding", count: 1 },
-            { type: "Low Fuel", count: 1 },
-            { type: "Offline", count: 1 },
+            { type: "Speeding", count: speedingCount },
+            { type: "Low Fuel", count: fuelCount },
+            { type: "Offline", count: offlineCount },
             { type: "Route Deviation", count: 0 }
           ]
         }), { status: 200 });

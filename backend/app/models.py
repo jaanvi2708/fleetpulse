@@ -10,6 +10,7 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     full_name = Column(String, nullable=True)
+    role = Column(String, default="user", nullable=False)
 
 class Vehicle(Base):
     __tablename__ = "vehicles"
@@ -42,9 +43,11 @@ class Shipment(Base):
     progress = Column(Float, default=0.0)  # 0.0 to 100.0
     current_lat = Column(Float, nullable=True)
     current_lng = Column(Float, nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     
     # Relationships
     vehicle = relationship("Vehicle", back_populates="shipments")
+    user = relationship("User")
 
 class Alert(Base):
     __tablename__ = "alerts"

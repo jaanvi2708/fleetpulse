@@ -44,14 +44,31 @@ def seed_data(db: Session):
         
     logger.info("Seeding database with realistic cyber-logistics fleet data...")
     
-    # 1. Create Demo User
-    demo_user = models.User(
-        email="admin@fleetpulse.com",
-        hashed_password=auth.get_password_hash("admin123"),
-        full_name="Fleet Operations Command"
-    )
-    db.add(demo_user)
-    db.flush()
+    # 1. Create Users (Admin, Drivers, Clients)
+    users_to_seed = [
+        {"email": "admin@fleetpulse.com", "full_name": "Fleet Operations Command", "role": "admin"},
+        {"email": "aarav@fleetpulse.com", "full_name": "Aarav Mehta", "role": "driver"},
+        {"email": "priya@fleetpulse.com", "full_name": "Priya Nair", "role": "driver"},
+        {"email": "rohan@fleetpulse.com", "full_name": "Rohan Deshmukh", "role": "driver"},
+        {"email": "karan@fleetpulse.com", "full_name": "Karan Johar", "role": "driver"},
+        {"email": "arjun@fleetpulse.com", "full_name": "Arjun Sharma", "role": "driver"},
+        {"email": "user1@fleetpulse.com", "full_name": "User One", "role": "user"},
+        {"email": "user2@fleetpulse.com", "full_name": "User Two", "role": "user"},
+        {"email": "user3@fleetpulse.com", "full_name": "User Three", "role": "user"},
+        {"email": "user4@fleetpulse.com", "full_name": "User Four", "role": "user"}
+    ]
+    
+    seeded_users = {}
+    for u in users_to_seed:
+        user = models.User(
+            email=u["email"],
+            hashed_password=auth.get_password_hash("admin123"),
+            full_name=u["full_name"],
+            role=u["role"]
+        )
+        db.add(user)
+        db.flush()
+        seeded_users[u["email"]] = user.id
     
     # 2. Create Vehicles
     vehicles_data = [
@@ -100,10 +117,10 @@ def seed_data(db: Session):
             
     # 4. Create Shipments
     shipments_data = [
-        {"shipment_number": "SH-5001", "vehicle_id": 1, "origin": "Delhi, DL", "destination": "Udaipur, RJ", "eta": "5h 15m", "status": "In Transit", "progress": 42.0},
-        {"shipment_number": "SH-5002", "vehicle_id": 2, "origin": "Bangalore, KA", "destination": "Chennai, TN", "eta": "Pending Dispatch", "status": "Pending", "progress": 0.0},
-        {"shipment_number": "SH-5003", "vehicle_id": 3, "origin": "Kolkata, WB", "destination": "Bhubaneswar, OD", "eta": "Delayed (+55m)", "status": "Delayed", "progress": 78.5},
-        {"shipment_number": "SH-5004", "vehicle_id": 5, "origin": "Mumbai, MH", "destination": "Ahmedabad, GJ", "eta": "4h 45m", "status": "In Transit", "progress": 32.0},
+        {"shipment_number": "SH-5001", "vehicle_id": 1, "origin": "Delhi, DL", "destination": "Udaipur, RJ", "eta": "5h 15m", "status": "In Transit", "progress": 42.0, "user_email": "user1@fleetpulse.com"},
+        {"shipment_number": "SH-5002", "vehicle_id": 2, "origin": "Bangalore, KA", "destination": "Chennai, TN", "eta": "Pending Dispatch", "status": "Pending", "progress": 0.0, "user_email": "user2@fleetpulse.com"},
+        {"shipment_number": "SH-5003", "vehicle_id": 3, "origin": "Kolkata, WB", "destination": "Bhubaneswar, OD", "eta": "Delayed (+55m)", "status": "Delayed", "progress": 78.5, "user_email": "user3@fleetpulse.com"},
+        {"shipment_number": "SH-5004", "vehicle_id": 5, "origin": "Mumbai, MH", "destination": "Ahmedabad, GJ", "eta": "4h 45m", "status": "In Transit", "progress": 32.0, "user_email": "user4@fleetpulse.com"},
     ]
     
     for s in shipments_data:
@@ -117,7 +134,8 @@ def seed_data(db: Session):
             status=s["status"],
             progress=s["progress"],
             current_lat=v_obj.latitude if v_obj else None,
-            current_lng=v_obj.longitude if v_obj else None
+            current_lng=v_obj.longitude if v_obj else None,
+            user_id=seeded_users[s["user_email"]]
         )
         db.add(shipment)
         
@@ -489,14 +507,31 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
     }
 
 @app.get("/api/reports")
-def get_reports_data(db: Session = Depends(get_db)):
-    # 1. Total telemetry count
-    total_telemetry_count = db.query(models.TelemetryHistory).count()
+def get_reports_data(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    # Get filtered list of vehicles based on RBAC role
+    if current_user.role == "admin":
+        vehicles = db.query(models.Vehicle).all()
+    elif current_user.role == "driver":
+        vehicle = db.query(models.Vehicle).filter(models.Vehicle.driver_name == current_user.full_name).first()
+        vehicles = [vehicle] if vehicle else []
+    else: # client user
+        shipments = db.query(models.Shipment).filter(models.Shipment.user_id == current_user.id).all()
+        vehicle_ids = [s.vehicle_id for s in shipments if s.vehicle_id is not None]
+        if vehicle_ids:
+            vehicles = db.query(models.Vehicle).filter(models.Vehicle.id.in_(vehicle_ids)).all()
+        else:
+            vehicles = []
+
+    vehicle_ids = [v.id for v in vehicles]
+
+    # 1. Total telemetry count for the filtered vehicles
+    if vehicle_ids:
+        total_telemetry_count = db.query(models.TelemetryHistory).filter(models.TelemetryHistory.vehicle_id.in_(vehicle_ids)).count()
+    else:
+        total_telemetry_count = 0
     
     # 2. Vehicle summaries
-    vehicles = db.query(models.Vehicle).all()
     vehicle_summaries = []
-    
     for v in vehicles:
         # Get historical points for this vehicle
         v_history = db.query(models.TelemetryHistory).filter(models.TelemetryHistory.vehicle_id == v.id).all()
@@ -520,11 +555,13 @@ def get_reports_data(db: Session = Depends(get_db)):
             "alerts_count": alerts_count
         })
         
-    # 3. Recent telemetry (last 100 log items, ordered by timestamp desc)
-    recent_history = db.query(models.TelemetryHistory).order_by(models.TelemetryHistory.timestamp.desc()).limit(100).all()
+    # 3. Recent telemetry (last 100 log items, ordered by timestamp desc) for filtered vehicles
+    if vehicle_ids:
+        recent_history = db.query(models.TelemetryHistory).filter(models.TelemetryHistory.vehicle_id.in_(vehicle_ids)).order_by(models.TelemetryHistory.timestamp.desc()).limit(100).all()
+    else:
+        recent_history = []
+        
     recent_telemetry = []
-    
-    # Map vehicle details for easy lookup
     vehicle_map = {v.id: v for v in vehicles}
     
     for h in recent_history:
@@ -540,12 +577,14 @@ def get_reports_data(db: Session = Depends(get_db)):
             "fuel_level": h.fuel_level
         })
         
-    # 4. Alert summary statistics
-    # Group alerts by alert_type
+    # 4. Alert summary statistics for filtered vehicles
     alert_types = ["Speeding", "Low Fuel", "Offline", "Route Deviation"]
     alert_summary = []
     for atype in alert_types:
-        count = db.query(models.Alert).filter(models.Alert.alert_type == atype).count()
+        if vehicle_ids:
+            count = db.query(models.Alert).filter(models.Alert.alert_type == atype, models.Alert.vehicle_id.in_(vehicle_ids)).count()
+        else:
+            count = 0
         alert_summary.append({
             "type": atype,
             "count": count
@@ -725,64 +764,6 @@ def get_ai_insights(db: Session = Depends(get_db)):
         "recommendations": recommendations,
         "model_version": "v1.4.2-neural-eta",
         "last_inference": datetime.utcnow().isoformat()
-    }
-
-
-@app.get("/api/reports")
-def get_reports_data(db: Session = Depends(get_db)):
-    vehicles = db.query(models.Vehicle).all()
-    alerts = db.query(models.Alert).all()
-    shipments = db.query(models.Shipment).all()
-    telemetry_logs = db.query(models.TelemetryHistory).order_by(models.TelemetryHistory.timestamp.desc()).limit(100).all()
-    
-    # Calculate vehicle specific summaries
-    vehicle_summaries = []
-    for v in vehicles:
-        v_logs = [t for t in telemetry_logs if t.vehicle_id == v.id]
-        avg_speed = sum(l.speed for l in v_logs) / len(v_logs) if v_logs else v.speed
-        avg_fuel = sum(l.fuel_level for l in v_logs) / len(v_logs) if v_logs else v.fuel_level
-        alerts_count = sum(1 for a in alerts if a.vehicle_id == v.id)
-        
-        vehicle_summaries.append({
-            "vehicle_id": v.id,
-            "vehicle_number": v.vehicle_number,
-            "driver_name": v.driver_name,
-            "status": v.status,
-            "log_count": len(v_logs),
-            "avg_speed": round(avg_speed, 1),
-            "avg_fuel_level": round(avg_fuel, 1),
-            "alerts_count": alerts_count
-        })
-        
-    # Calculate alert counts by type
-    alert_summary = {}
-    for a in alerts:
-        alert_summary[a.alert_type] = alert_summary.get(a.alert_type, 0) + 1
-        
-    return {
-        "vehicle_summaries": vehicle_summaries,
-        "alert_summary": [{"type": k, "count": v} for k, v in alert_summary.items()],
-        "total_telemetry_count": db.query(models.TelemetryHistory).count(),
-        "recent_telemetry": [
-            {
-                "id": t.id,
-                "vehicle_id": t.vehicle_id,
-                "vehicle_number": next((v.vehicle_number for v in vehicles if v.id == t.vehicle_id), "Unknown"),
-                "driver_name": next((v.driver_name for v in vehicles if v.id == t.vehicle_id), "Unknown"),
-                "latitude": t.latitude,
-                "longitude": t.longitude,
-                "speed": t.speed,
-                "fuel_level": t.fuel_level,
-                "timestamp": t.timestamp.isoformat()
-            } for t in telemetry_logs
-        ],
-        "shipment_summary": {
-            "total": len(shipments),
-            "delivered": sum(1 for s in shipments if s.status == "Delivered"),
-            "transit": sum(1 for s in shipments if s.status == "In Transit"),
-            "delayed": sum(1 for s in shipments if s.status == "Delayed"),
-            "pending": sum(1 for s in shipments if s.status == "Pending" or s.status == "Picked Up")
-        }
     }
 
 

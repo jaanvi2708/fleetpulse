@@ -8,12 +8,7 @@ import {
   ListOrdered 
 } from 'lucide-react';
 import { useFleetStore } from '../store/fleetStore';
-import { 
-  ResponsiveContainer, 
-  LineChart, Line, 
-  BarChart, Bar, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend 
-} from 'recharts';
+// Recharts replaced with custom CSS/SVG widgets
 
 export const Analytics: React.FC = () => {
   const token = useFleetStore((state) => state.token);
@@ -50,10 +45,7 @@ export const Analytics: React.FC = () => {
     { day: 'Sun', speed: 65.5, fuelEfficiency: 7.8 }
   ];
 
-  const tooltipStyle = {
-    contentStyle: { backgroundColor: '#222220', border: '1px solid #333330', borderRadius: '8px', fontSize: '11px', color: '#d4d4cc' },
-    labelStyle: { color: '#8a8a80', fontSize: '11px', fontWeight: 'bold' as const },
-  };
+
 
   if (loading || !analyticsData) {
     return (
@@ -96,17 +88,64 @@ export const Analytics: React.FC = () => {
             Deliveries & Dispatches
           </h4>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={analyticsData.deliveries_chart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333330" />
-                <XAxis dataKey="date" stroke="#6b6b64" fontSize={10} />
-                <YAxis stroke="#6b6b64" fontSize={10} />
-                <Tooltip {...tooltipStyle} />
-                <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '11px' }} />
-                <Line type="monotone" dataKey="deliveries" name="Completed" stroke="#8a9bae" strokeWidth={2} activeDot={{ r: 5 }} />
-                <Line type="monotone" dataKey="delayed" name="Delayed" stroke="#b07070" strokeWidth={1.5} />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="h-64 flex flex-col justify-end">
+              <div className="flex justify-between items-end h-52 px-2 relative">
+                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                  <div className="border-b border-stone-850 w-full h-0"></div>
+                  <div className="border-b border-stone-850 w-full h-0"></div>
+                  <div className="border-b border-stone-850 w-full h-0"></div>
+                  <div className="border-b border-stone-850 w-full h-0"></div>
+                </div>
+                
+                <svg className="w-full h-full absolute inset-0 z-10" viewBox="0 0 500 200" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="gradDel" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8a9bae" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#8a9bae" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="gradDelDelayed" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#b07070" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="#b07070" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  {(() => {
+                    const chartData = analyticsData.deliveries_chart || [];
+                    const maxVal = Math.max(...chartData.map((d: any) => Math.max(d.deliveries || 0, d.delayed || 0)), 1);
+                    const pointsDel = chartData.map((d: any, idx: number) => {
+                      const x = (idx / Math.max(chartData.length - 1, 1)) * 500;
+                      const y = 200 - ((d.deliveries || 0) / maxVal) * 160 - 20;
+                      return `${x},${y}`;
+                    });
+                    const pointsDelayed = chartData.map((d: any, idx: number) => {
+                      const x = (idx / Math.max(chartData.length - 1, 1)) * 500;
+                      const y = 200 - ((d.delayed || 0) / maxVal) * 160 - 20;
+                      return `${x},${y}`;
+                    });
+                    return (
+                      <>
+                        {pointsDel.length > 0 && (
+                          <>
+                            <path d={`M 0,200 L ${pointsDel.join(' L ')} L 500,200 Z`} fill="url(#gradDel)" />
+                            <path d={`M ${pointsDel.join(' L ')}`} stroke="#8a9bae" strokeWidth="2" fill="none" />
+                          </>
+                        )}
+                        {pointsDelayed.length > 0 && (
+                          <>
+                            <path d={`M 0,200 L ${pointsDelayed.join(' L ')} L 500,200 Z`} fill="url(#gradDelDelayed)" />
+                            <path d={`M ${pointsDelayed.join(' L ')}`} stroke="#b07070" strokeWidth="1.5" fill="none" />
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
+                </svg>
+              </div>
+              <div className="flex justify-between text-[9px] text-stone-500 mt-2 px-1 font-mono uppercase tracking-wider">
+                {(analyticsData.deliveries_chart || []).map((d: any, idx: number) => (
+                  <span key={idx}>{d.date}</span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -116,17 +155,42 @@ export const Analytics: React.FC = () => {
             On-Time vs Delayed
           </h4>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analyticsData.deliveries_chart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333330" />
-                <XAxis dataKey="date" stroke="#6b6b64" fontSize={10} />
-                <YAxis stroke="#6b6b64" fontSize={10} />
-                <Tooltip {...tooltipStyle} />
-                <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '11px' }} />
-                <Bar dataKey="deliveries" name="On-Time" fill="#8a9bae" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="delayed" name="Delayed" fill="#a0937d" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="h-64 flex flex-col justify-end">
+              <div className="flex justify-between items-end h-52 px-2 relative">
+                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                  <div className="border-b border-stone-850 w-full h-0"></div>
+                  <div className="border-b border-stone-850 w-full h-0"></div>
+                  <div className="border-b border-stone-850 w-full h-0"></div>
+                  <div className="border-b border-stone-850 w-full h-0"></div>
+                </div>
+                
+                {(() => {
+                  const chartData = analyticsData.deliveries_chart || [];
+                  const maxVal = Math.max(...chartData.map((d: any) => Math.max(d.deliveries || 0, d.delayed || 0)), 1);
+                  return chartData.map((d: any, idx: number) => {
+                    const delHeight = ((d.deliveries || 0) / maxVal) * 100;
+                    const delayHeight = ((d.delayed || 0) / maxVal) * 100;
+                    return (
+                      <div key={idx} className="flex flex-col items-center flex-1 group z-10">
+                        <div className="flex gap-1 items-end h-36 w-full justify-center">
+                          <div 
+                            style={{ height: `${Math.max(4, delHeight)}%` }} 
+                            className="w-2.5 bg-[#8a9bae] hover:bg-[#8a9bae]/90 rounded-t transition-all duration-300"
+                            title={`On-Time: ${d.deliveries}`}
+                          />
+                          <div 
+                            style={{ height: `${Math.max(4, delayHeight)}%` }} 
+                            className="w-2.5 bg-[#a0937d] hover:bg-[#a0937d]/90 rounded-t transition-all duration-300"
+                            title={`Delayed: ${d.delayed}`}
+                          />
+                        </div>
+                        <span className="text-[9px] text-stone-500 mt-2 font-mono">{d.date}</span>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -139,17 +203,43 @@ export const Analytics: React.FC = () => {
             Operational Efficiency
           </h4>
           <div className="h-56">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={performanceTrend} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333330" />
-                <XAxis dataKey="day" stroke="#6b6b64" fontSize={10} />
-                <YAxis stroke="#6b6b64" fontSize={10} />
-                <Tooltip {...tooltipStyle} />
-                <Legend wrapperStyle={{ fontSize: '10px' }} />
-                <Line type="monotone" dataKey="speed" name="Speed (km/h)" stroke="#a0937d" strokeWidth={1.5} />
-                <Line type="monotone" dataKey="fuelEfficiency" name="Efficiency (mpg)" stroke="#c4956a" strokeWidth={1.5} />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="h-56 flex flex-col justify-end">
+              <div className="flex justify-between items-end h-44 px-2 relative">
+                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                  <div className="border-b border-stone-850 w-full h-0"></div>
+                  <div className="border-b border-stone-850 w-full h-0"></div>
+                  <div className="border-b border-stone-850 w-full h-0"></div>
+                </div>
+                
+                <svg className="w-full h-full absolute inset-0 z-10" viewBox="0 0 500 160" preserveAspectRatio="none">
+                  {(() => {
+                    const maxSpeed = 100;
+                    const maxEff = 10;
+                    const pointsSpeed = performanceTrend.map((d: any, idx: number) => {
+                      const x = (idx / 6) * 500;
+                      const y = 160 - (d.speed / maxSpeed) * 120 - 20;
+                      return `${x},${y}`;
+                    });
+                    const pointsEff = performanceTrend.map((d: any, idx: number) => {
+                      const x = (idx / 6) * 500;
+                      const y = 160 - (d.fuelEfficiency / maxEff) * 120 - 20;
+                      return `${x},${y}`;
+                    });
+                    return (
+                      <>
+                        <path d={`M ${pointsSpeed.join(' L ')}`} stroke="#a0937d" strokeWidth="1.5" fill="none" />
+                        <path d={`M ${pointsEff.join(' L ')}`} stroke="#c4956a" strokeWidth="1.5" fill="none" />
+                      </>
+                    );
+                  })()}
+                </svg>
+              </div>
+              <div className="flex justify-between text-[9px] text-stone-500 mt-2 px-1 font-mono">
+                {performanceTrend.map((d: any, idx: number) => (
+                  <span key={idx}>{d.day}</span>
+                ))}
+              </div>
+            </div>
           </div>
           <span className="text-[10px] text-stone-600 text-center font-medium block pt-2 border-t border-fp-border select-none">
             Weekly telemetry aggregation

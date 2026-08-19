@@ -86,6 +86,7 @@ interface FleetState {
   token: string | null;
   userEmail: string | null;
   userName: string | null;
+  userRole: string | null;
   isAuthenticated: boolean;
   
   vehicles: Vehicle[];
@@ -98,7 +99,7 @@ interface FleetState {
   selectedShipmentId: number | null;
   
   // Actions
-  login: (token: string, email: string, name: string) => void;
+  login: (token: string, email: string, name: string, role?: string) => void;
   logout: () => void;
   
   setVehicles: (vehicles: Vehicle[]) => void;
@@ -123,11 +124,13 @@ export const useFleetStore = create<FleetState>((set) => {
   const initialToken = localStorage.getItem('fp_token');
   const initialEmail = localStorage.getItem('fp_email');
   const initialName = localStorage.getItem('fp_name');
+  const initialRole = localStorage.getItem('fp_role');
 
   return {
     token: initialToken,
     userEmail: initialEmail,
     userName: initialName,
+    userRole: initialRole,
     isAuthenticated: !!initialToken,
     
     vehicles: [],
@@ -144,18 +147,20 @@ export const useFleetStore = create<FleetState>((set) => {
     selectedVehicleId: null,
     selectedShipmentId: null,
     
-    login: (token, email, name) => {
+    login: (token, email, name, role?: string) => {
       localStorage.setItem('fp_token', token);
       localStorage.setItem('fp_email', email);
       localStorage.setItem('fp_name', name);
-      set({ token, userEmail: email, userName: name, isAuthenticated: true });
+      if (role) localStorage.setItem('fp_role', role);
+      set({ token, userEmail: email, userName: name, userRole: role || null, isAuthenticated: true });
     },
     
     logout: () => {
       localStorage.removeItem('fp_token');
       localStorage.removeItem('fp_email');
       localStorage.removeItem('fp_name');
-      set({ token: null, userEmail: null, userName: null, isAuthenticated: false });
+      localStorage.removeItem('fp_role');
+      set({ token: null, userEmail: null, userName: null, userRole: null, isAuthenticated: false });
     },
     
     setVehicles: (vehicles) => set({ vehicles }),
