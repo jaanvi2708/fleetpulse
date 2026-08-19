@@ -13,6 +13,7 @@ import { Alerts } from './pages/Alerts';
 import { AIInsights } from './pages/AIInsights';
 import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
+import { Chatbot } from './components/Chatbot';
 import { X, ShieldAlert, AlertTriangle, Info, Menu, Radio } from 'lucide-react';
 
 interface Toast {
@@ -198,6 +199,9 @@ export const App: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {/* PulseAI Chatbot Guide */}
+      <Chatbot setCurrentTab={setCurrentTab} />
     </div>
   );
 };
