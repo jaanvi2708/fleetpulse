@@ -100,10 +100,10 @@ def seed_data(db: Session):
             
     # 4. Create Shipments
     shipments_data = [
-        {"shipment_number": "SH-5001", "vehicle_id": 1, "origin": "Delhi, DL", "destination": "Jaipur, RJ", "eta": "2h 45m", "status": "In Transit", "progress": 42.0},
+        {"shipment_number": "SH-5001", "vehicle_id": 1, "origin": "Delhi, DL", "destination": "Udaipur, RJ", "eta": "5h 15m", "status": "In Transit", "progress": 42.0},
         {"shipment_number": "SH-5002", "vehicle_id": 2, "origin": "Bangalore, KA", "destination": "Chennai, TN", "eta": "Pending Dispatch", "status": "Pending", "progress": 0.0},
         {"shipment_number": "SH-5003", "vehicle_id": 3, "origin": "Kolkata, WB", "destination": "Bhubaneswar, OD", "eta": "Delayed (+55m)", "status": "Delayed", "progress": 78.5},
-        {"shipment_number": "SH-5004", "vehicle_id": 5, "origin": "Mumbai, MH", "destination": "Pune, MH", "eta": "1h 25m", "status": "In Transit", "progress": 32.0},
+        {"shipment_number": "SH-5004", "vehicle_id": 5, "origin": "Mumbai, MH", "destination": "Ahmedabad, GJ", "eta": "4h 45m", "status": "In Transit", "progress": 32.0},
     ]
     
     for s in shipments_data:

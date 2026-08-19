@@ -10,21 +10,20 @@ import type { Vehicle } from '../store/fleetStore';
 import { LiveMap } from '../components/LiveMap';
 
 // ── Indian Highway routes aligned exactly with backend simulator waypoints ──
-// FP-101 (Aarav Mehta)    → Delhi → Jaipur via NH-48     [lat 28.61, lng 77.20]
+// FP-101 (Aarav Mehta)    → Delhi → Udaipur via NH-48    [lat 28.61, lng 77.20]
 // FP-202 (Priya Nair)     → Bangalore → Chennai via NH-48 [lat 12.97, lng 77.59]
 // FP-303 (Rohan Deshmukh) → Kolkata → Bhubaneswar NH-16  [lat 22.57, lng 88.36]
-// FP-404 (Karan Johar)    → Hyderabad → Vijayawada NH-65 [lat 17.38, lng 78.48]
-// FP-505 (Arjun Sharma)   → Mumbai → Pune via NH-48      [lat 19.07, lng 72.87]
+// FP-404 (Karan Johar)    → Hyderabad → Bangalore NH-44  [lat 17.38, lng 78.48]
+// FP-505 (Arjun Sharma)   → Mumbai → Ahmedabad via NH-48  [lat 19.07, lng 72.87]
 
 const VEHICLE_REGION_TRIPS: Record<string, Array<{
   from: string; to: string; highway: string; km: number; cargo: string;
 }>> = {
   'FP-101': [
-    { from: 'Delhi, DL',          to: 'Jaipur, RJ',          highway: 'NH-48',   km: 270, cargo: 'Electronics — 18 pallets' },
+    { from: 'Delhi, DL',          to: 'Udaipur, RJ',         highway: 'NH-48',   km: 660, cargo: 'Electronics — 18 pallets' },
     { from: 'Delhi, DL',          to: 'Gurugram, HR',        highway: 'NH-48',   km: 35,  cargo: 'Courier Packages — 100 units' },
-    { from: 'Gurugram, HR',       to: 'Behror, RJ',          highway: 'NH-48',   km: 120, cargo: 'Spare Parts — 14 pallets' },
-    { from: 'Jaipur, RJ',          to: 'Delhi, DL',          highway: 'NH-48',   km: 270, cargo: 'Handicrafts — 20 pallets' },
-    { from: 'Delhi, DL',          to: 'Kotputli, RJ',        highway: 'NH-48',   km: 140, cargo: 'Industrial equipment' },
+    { from: 'Gurugram, HR',       to: 'Jaipur, RJ',          highway: 'NH-48',   km: 235, cargo: 'Spare Parts — 14 pallets' },
+    { from: 'Jaipur, RJ',         to: 'Udaipur, RJ',         highway: 'NH-48',   km: 390, cargo: 'Handicrafts — 20 pallets' },
   ],
   'FP-202': [
     { from: 'Bangalore, KA',     to: 'Chennai, TN',         highway: 'NH-48',   km: 346, cargo: 'Consumer Goods — 16 pallets' },
@@ -40,17 +39,16 @@ const VEHICLE_REGION_TRIPS: Record<string, Array<{
     { from: 'Balasore, OD',      to: 'Bhadrak, OD',         highway: 'NH-16',   km: 75,  cargo: 'Electronics — 20 pallets' },
   ],
   'FP-404': [
-    { from: 'Hyderabad, TG',     to: 'Vijayawada, AP',      highway: 'NH-65',   km: 272, cargo: 'Auto Parts — Tata OEM' },
-    { from: 'Hyderabad, TG',     to: 'Suryapet, TG',        highway: 'NH-65',   km: 130, cargo: 'Cement Bags — 400 bags' },
-    { from: 'Suryapet, TG',      to: 'Kodad, TG',           highway: 'NH-65',   km: 45,  cargo: 'Beverages — 28 pallets' },
-    { from: 'Kodad, TG',         to: 'Nandigama, AP',       highway: 'NH-65',   km: 35,  cargo: 'Plastic Resin — Tanker' },
+    { from: 'Hyderabad, TG',     to: 'Bangalore, KA',       highway: 'NH-44',   km: 570, cargo: 'Auto Parts — Tata OEM' },
+    { from: 'Hyderabad, TG',     to: 'Kurnool, AP',         highway: 'NH-44',   km: 210, cargo: 'Cement Bags — 400 bags' },
+    { from: 'Kurnool, AP',       to: 'Anantapur, AP',       highway: 'NH-44',   km: 150, cargo: 'Beverages — 28 pallets' },
+    { from: 'Anantapur, AP',     to: 'Bangalore, KA',       highway: 'NH-44',   km: 210, cargo: 'Plastic Resin — Tanker' },
   ],
   'FP-505': [
-    { from: 'Mumbai, MH',        to: 'Pune, MH',            highway: 'NH-48',   km: 148, cargo: 'Pharmaceuticals — 12 pallets' },
-    { from: 'Mumbai, MH',        to: 'Nashik, MH',          highway: 'NH-160',  km: 167, cargo: 'Auto Components — Bajaj Auto' },
-    { from: 'Pune, MH',          to: 'Kolhapur, MH',        highway: 'NH-48',   km: 228, cargo: 'Textiles — 26 pallets' },
-    { from: 'Mumbai, MH',        to: 'Surat, GJ',           highway: 'NH-48',   km: 284, cargo: 'Consumer Goods — 20 pallets' },
-    { from: 'Nashik, MH',        to: 'Aurangabad, MH',      highway: 'NH-160',  km: 108, cargo: 'FMCG Goods — 18 pallets' },
+    { from: 'Mumbai, MH',        to: 'Ahmedabad, GJ',       highway: 'NH-48',   km: 530, cargo: 'Pharmaceuticals — 12 pallets' },
+    { from: 'Mumbai, MH',        to: 'Surat, GJ',           highway: 'NH-48',   km: 284, cargo: 'Auto Components — Bajaj Auto' },
+    { from: 'Surat, GJ',         to: 'Vadodara, GJ',        highway: 'NH-48',   km: 150, cargo: 'Textiles — 26 pallets' },
+    { from: 'Vadodara, GJ',      to: 'Ahmedabad, GJ',       highway: 'NH-48',   km: 100, cargo: 'Consumer Goods — 20 pallets' },
   ],
 };
 

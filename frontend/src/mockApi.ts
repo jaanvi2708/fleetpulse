@@ -16,9 +16,8 @@ const MOCK_USER = {
 
 const ROUTES: Record<string, [number, number][]> = {
   "FP-101": [
-    [28.6139, 77.2090], [28.4595, 77.0266], [28.2045, 76.7905],
-    [27.8872, 76.2856], [27.7027, 76.2001], [27.3878, 75.9620],
-    [26.9124, 75.7873]
+    [28.6139, 77.2090], [28.4595, 77.0266], [26.9124, 75.7873],
+    [26.4499, 74.6399], [25.3484, 74.6433], [24.5854, 73.7125]
   ],
   "FP-202": [
     [12.9716, 77.5946], [12.7409, 77.8253], [12.5186, 78.2138],
@@ -30,13 +29,12 @@ const ROUTES: Record<string, [number, number][]> = {
     [21.0574, 86.4958], [20.4625, 85.8830], [20.2961, 85.8245]
   ],
   "FP-404": [
-    [17.3850, 78.4867], [17.1439, 79.6238], [17.0004, 80.0076],
-    [16.7725, 80.2917], [16.5062, 80.6480]
+    [17.3850, 78.4867], [16.7388, 77.9862], [15.8281, 78.0373],
+    [14.6819, 77.6006], [12.9716, 77.5946]
   ],
   "FP-505": [
-    [19.0760, 72.8777], [19.0330, 73.0297], [18.9975, 73.1213],
-    [18.9068, 73.3559], [18.7811, 73.4877], [18.7563, 73.4784],
-    [18.6524, 73.7792], [18.5204, 73.8567]
+    [19.0760, 72.8777], [19.2183, 72.9781], [20.3717, 72.9082],
+    [21.1702, 72.8311], [22.3072, 73.1812], [23.0225, 72.5714]
   ]
 };
 
@@ -49,10 +47,10 @@ let vehicles = [
 ];
 
 let shipments = [
-  { id: 1, shipment_number: "SH-5001", vehicle_id: 1, origin: "Delhi, DL", destination: "Jaipur, RJ", eta: "2h 45m", status: "In Transit", progress: 42.0, current_lat: 28.6139, current_lng: 77.2090 },
+  { id: 1, shipment_number: "SH-5001", vehicle_id: 1, origin: "Delhi, DL", destination: "Udaipur, RJ", eta: "5h 15m", status: "In Transit", progress: 42.0, current_lat: 28.6139, current_lng: 77.2090 },
   { id: 2, shipment_number: "SH-5002", vehicle_id: 2, origin: "Bangalore, KA", destination: "Chennai, TN", eta: "Pending Dispatch", status: "Pending", progress: 0.0, current_lat: 12.9716, current_lng: 77.5946 },
   { id: 3, shipment_number: "SH-5003", vehicle_id: 3, origin: "Kolkata, WB", destination: "Bhubaneswar, OD", eta: "Delayed (+55m)", status: "Delayed", progress: 78.5, current_lat: 22.5726, current_lng: 88.3639 },
-  { id: 4, shipment_number: "SH-5004", vehicle_id: 5, origin: "Mumbai, MH", destination: "Pune, MH", eta: "1h 25m", status: "In Transit", progress: 32.0, current_lat: 19.0760, current_lng: 72.8777 }
+  { id: 4, shipment_number: "SH-5004", vehicle_id: 5, origin: "Mumbai, MH", destination: "Ahmedabad, GJ", eta: "4h 45m", status: "In Transit", progress: 32.0, current_lat: 19.0760, current_lng: 72.8777 }
 ];
 
 let alerts = [

@@ -14,17 +14,16 @@ BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000/api/telemetry")
 # Each waypoint is (lat, lng) along the real road path
 # ─────────────────────────────────────────────────────────────────────────────
 ROUTES = {
-    # FP-101: Delhi → Jaipur via NH-48
+    # FP-101: Delhi → Udaipur via NH-48 (~660 km)
     "FP-101": [
         (28.6139, 77.2090),  # Delhi
         (28.4595, 77.0266),  # Gurugram
-        (28.2045, 76.7905),  # Dharuhera
-        (27.8872, 76.2856),  # Behror
-        (27.7027, 76.2001),  # Kotputli
-        (27.3878, 75.9620),  # Shahpura
-        (26.9124, 75.7873),  # Jaipur (destination)
+        (26.9124, 75.7873),  # Jaipur
+        (26.4499, 74.6399),  # Ajmer
+        (25.3484, 74.6433),  # Bhilwara
+        (24.5854, 73.7125),  # Udaipur (destination)
     ],
-    # FP-202: Bangalore → Chennai via NH-48/NH-75
+    # FP-202: Bangalore → Chennai via NH-48/NH-75 (~346 km)
     "FP-202": [
         (12.9716, 77.5946),  # Bangalore
         (12.7409, 77.8253),  # Hosur
@@ -34,7 +33,7 @@ ROUTES = {
         (12.8342, 79.7036),  # Kanchipuram
         (13.0827, 80.2707),  # Chennai (destination)
     ],
-    # FP-303: Kolkata → Bhubaneswar via NH-16
+    # FP-303: Kolkata → Bhubaneswar via NH-16 (~440 km)
     "FP-303": [
         (22.5726, 88.3639),  # Kolkata
         (22.3302, 87.3237),  # Kharagpur
@@ -43,24 +42,22 @@ ROUTES = {
         (20.4625, 85.8830),  # Cuttack
         (20.2961, 85.8245),  # Bhubaneswar (destination)
     ],
-    # FP-404: Hyderabad → Vijayawada via NH-65
+    # FP-404: Hyderabad → Bangalore via NH-44 (~570 km)
     "FP-404": [
         (17.3850, 78.4867),  # Hyderabad
-        (17.1439, 79.6238),  # Suryapet
-        (17.0004, 80.0076),  # Kodad
-        (16.7725, 80.2917),  # Nandigama
-        (16.5062, 80.6480),  # Vijayawada (destination)
+        (16.7388, 77.9862),  # Mahbubnagar
+        (15.8281, 78.0373),  # Kurnool
+        (14.6819, 77.6006),  # Anantapur
+        (12.9716, 77.5946),  # Bangalore (destination)
     ],
-    # FP-505: Mumbai → Pune via NH-48
+    # FP-505: Mumbai → Ahmedabad via NH-48 (~530 km)
     "FP-505": [
-        (19.0760,  72.8777),  # Mumbai (Bandra)
-        (19.0330,  73.0297),  # Thane
-        (18.9975,  73.1213),  # Kalyan
-        (18.9068,  73.3559),  # Khopoli
-        (18.7811,  73.4877),  # Khandala (Ghats)
-        (18.7563,  73.4784),  # Lonavala
-        (18.6524,  73.7792),  # Talegaon
-        (18.5204,  73.8567),  # Pune (destination)
+        (19.0760, 72.8777),  # Mumbai
+        (19.2183, 72.9781),  # Thane
+        (20.3717, 72.9082),  # Vapi
+        (21.1702, 72.8311),  # Surat
+        (22.3072, 73.1812),  # Vadodara
+        (23.0225, 72.5714),  # Ahmedabad (destination)
     ],
 }
 
