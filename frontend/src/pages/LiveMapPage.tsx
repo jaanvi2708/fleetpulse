@@ -3,27 +3,38 @@ import { useFleetStore } from '../store/fleetStore';
 import { LiveMap } from '../components/LiveMap';
 import { Shield, Eye, Layers } from 'lucide-react';
 
+import { getClientShipments, getDriverVehicle } from '../utils/roleUtils';
+
 export const LiveMapPage: React.FC = () => {
   const vehicles = useFleetStore((state) => state.vehicles);
   const shipments = useFleetStore((state) => state.shipments);
   const userRole = useFleetStore((state) => state.userRole) || 'admin';
+  const userName = useFleetStore((state) => state.userName) || '';
+  const userEmail = useFleetStore((state) => state.userEmail) || '';
 
   // Layer Toggles State
   const [showRoutes, setShowRoutes] = useState(true);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [showGeofences, setShowGeofences] = useState(true);
 
-  // For 'user' role: find their active shipment's vehicle
-  const myClientShipment = userRole === 'user'
-    ? (shipments.find(s => s.status !== 'Delivered') || shipments[0] || null)
+  // Role scoping:
+  const clientShipmentsList = getClientShipments(userEmail, userRole, shipments, vehicles);
+  const myClientShipment = (userRole === 'user' || userRole === 'client')
+    ? (clientShipmentsList.find(s => s.status !== 'Delivered') || clientShipmentsList[0] || null)
     : null;
   const myClientVehicle = myClientShipment
     ? vehicles.find(v => v.id === myClientShipment.vehicle_id) || null
     : null;
 
+  const myDriverVehicle = userRole === 'driver'
+    ? getDriverVehicle(userName, userEmail, vehicles)
+    : null;
+
   // Map vehicles scoped to role
-  const mapVehicles = userRole === 'user'
+  const mapVehicles = (userRole === 'user' || userRole === 'client')
     ? (myClientVehicle ? [myClientVehicle] : [])
+    : userRole === 'driver'
+    ? (myDriverVehicle ? [myDriverVehicle] : [])
     : vehicles;
 
   // Stats calculation for HUD — scoped to what the user can see

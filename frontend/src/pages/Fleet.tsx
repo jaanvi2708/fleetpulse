@@ -10,11 +10,11 @@ import type { Vehicle } from '../store/fleetStore';
 import { LiveMap } from '../components/LiveMap';
 
 // ── Indian Highway routes aligned exactly with backend simulator waypoints ──
-// FP-101 (Aarav Mehta)    → Delhi → Udaipur via NH-48    [lat 28.61, lng 77.20]
-// FP-202 (Priya Nair)     → Bangalore → Chennai via NH-48 [lat 12.97, lng 77.59]
-// FP-303 (Rohan Deshmukh) → Kolkata → Bhubaneswar NH-16  [lat 22.57, lng 88.36]
-// FP-404 (Karan Johar)    → Hyderabad → Bangalore NH-44  [lat 17.38, lng 78.48]
-// FP-505 (Arjun Sharma)   → Mumbai → Ahmedabad via NH-48  [lat 19.07, lng 72.87]
+// FP-101 (Driver 1)        → Delhi → Udaipur via NH-48    [lat 28.61, lng 77.20]
+// FP-202 (Driver 2)        → Bangalore → Chennai via NH-48 [lat 12.97, lng 77.59]
+// FP-303 (Driver 3)        → Kolkata → Bhubaneswar NH-16  [lat 22.57, lng 88.36]
+// FP-404 (Driver 4)        → Hyderabad → Bangalore NH-44  [lat 17.38, lng 78.48]
+// FP-505 (Driver 5)        → Mumbai → Ahmedabad via NH-48  [lat 19.07, lng 72.87]
 
 const VEHICLE_REGION_TRIPS: Record<string, Array<{
   from: string; to: string; highway: string; km: number; cargo: string;

@@ -47,11 +47,11 @@ def seed_data(db: Session):
     # 1. Create Users (Admin, Drivers, Clients)
     users_to_seed = [
         {"email": "admin@fleetpulse.com", "full_name": "Fleet Operations Command", "role": "admin"},
-        {"email": "aarav@fleetpulse.com", "full_name": "Aarav Mehta", "role": "driver"},
-        {"email": "priya@fleetpulse.com", "full_name": "Priya Nair", "role": "driver"},
-        {"email": "rohan@fleetpulse.com", "full_name": "Rohan Deshmukh", "role": "driver"},
-        {"email": "karan@fleetpulse.com", "full_name": "Karan Johar", "role": "driver"},
-        {"email": "arjun@fleetpulse.com", "full_name": "Arjun Sharma", "role": "driver"},
+        {"email": "driver1@fleetpulse.com", "full_name": "Driver 1", "role": "driver"},
+        {"email": "driver2@fleetpulse.com", "full_name": "Driver 2", "role": "driver"},
+        {"email": "driver3@fleetpulse.com", "full_name": "Driver 3", "role": "driver"},
+        {"email": "driver4@fleetpulse.com", "full_name": "Driver 4", "role": "driver"},
+        {"email": "driver5@fleetpulse.com", "full_name": "Driver 5", "role": "driver"},
         {"email": "user1@fleetpulse.com", "full_name": "User One", "role": "user"},
         {"email": "user2@fleetpulse.com", "full_name": "User Two", "role": "user"},
         {"email": "user3@fleetpulse.com", "full_name": "User Three", "role": "user"},
@@ -72,11 +72,11 @@ def seed_data(db: Session):
     
     # 2. Create Vehicles
     vehicles_data = [
-        {"id": 1, "vehicle_number": "FP-101", "driver_name": "Aarav Mehta", "status": "Moving", "speed": 72.5, "fuel_level": 84.2, "latitude": 28.6139, "longitude": 77.2090},
-        {"id": 2, "vehicle_number": "FP-202", "driver_name": "Priya Nair", "status": "Idle", "speed": 0.0, "fuel_level": 48.9, "latitude": 12.9716, "longitude": 77.5946},
-        {"id": 3, "vehicle_number": "FP-303", "driver_name": "Rohan Deshmukh", "status": "Moving", "speed": 62.0, "fuel_level": 12.8, "latitude": 22.5726, "longitude": 88.3639}, # Low Fuel
-        {"id": 4, "vehicle_number": "FP-404", "driver_name": "Karan Johar", "status": "Offline", "speed": 0.0, "fuel_level": 92.0, "latitude": 17.3850, "longitude": 78.4867}, # Offline
-        {"id": 5, "vehicle_number": "FP-505", "driver_name": "Arjun Sharma", "status": "Moving", "speed": 98.6, "fuel_level": 67.5, "latitude": 19.0760, "longitude": 72.8777},  # Mumbai, India — Speeding
+        {"id": 1, "vehicle_number": "FP-101", "driver_name": "Driver 1", "status": "Moving", "speed": 72.5, "fuel_level": 84.2, "latitude": 28.6139, "longitude": 77.2090},
+        {"id": 2, "vehicle_number": "FP-202", "driver_name": "Driver 2", "status": "Idle", "speed": 0.0, "fuel_level": 48.9, "latitude": 12.9716, "longitude": 77.5946},
+        {"id": 3, "vehicle_number": "FP-303", "driver_name": "Driver 3", "status": "Moving", "speed": 62.0, "fuel_level": 12.8, "latitude": 22.5726, "longitude": 88.3639}, # Low Fuel
+        {"id": 4, "vehicle_number": "FP-404", "driver_name": "Driver 4", "status": "Offline", "speed": 0.0, "fuel_level": 92.0, "latitude": 17.3850, "longitude": 78.4867}, # Offline
+        {"id": 5, "vehicle_number": "FP-505", "driver_name": "Driver 5", "status": "Moving", "speed": 98.6, "fuel_level": 67.5, "latitude": 19.0760, "longitude": 72.8777},  # Mumbai, India — Speeding
     ]
     
     vehicles = []

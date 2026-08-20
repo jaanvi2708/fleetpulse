@@ -80,7 +80,7 @@ export const Login: React.FC<LoginProps> = ({ onRegisterRedirect }) => {
             </div>
             <div className="flex justify-between items-center py-1 border-b border-fp-border/30">
               <span className="text-[10px] font-bold uppercase text-fp-info tracking-wide">Driver</span>
-              <button onClick={() => setEmail('aarav@fleetpulse.com')} className="text-stone-300 hover:text-stone-100 font-mono text-[10px] hover:underline">aarav@fleetpulse.com</button>
+              <button onClick={() => setEmail('driver1@fleetpulse.com')} className="text-stone-300 hover:text-stone-100 font-mono text-[10px] hover:underline">driver1@fleetpulse.com</button>
             </div>
             <div className="flex justify-between items-center py-1">
               <span className="text-[10px] font-bold uppercase text-fp-success tracking-wide">Client</span>

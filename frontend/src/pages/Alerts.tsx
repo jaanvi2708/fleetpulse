@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Search, AlertTriangle, CheckSquare, ShieldAlert, CheckCircle, Clock } from 'lucide-react';
 import { useFleetStore } from '../store/fleetStore';
 
+import { getClientShipments, getDriverVehicle } from '../utils/roleUtils';
+
 export const Alerts: React.FC = () => {
   const token = useFleetStore((state) => state.token);
   const alerts = useFleetStore((state) => state.alerts);
@@ -11,6 +13,7 @@ export const Alerts: React.FC = () => {
   const shipments = useFleetStore((state) => state.shipments);
   const userRole = useFleetStore((state) => state.userRole) || 'admin';
   const userName = useFleetStore((state) => state.userName) || '';
+  const userEmail = useFleetStore((state) => state.userEmail) || '';
   
   const [searchTerm, setSearchTerm] = useState('');
   const [severityFilter, setSeverityFilter] = useState('All');
@@ -57,10 +60,12 @@ export const Alerts: React.FC = () => {
 
   // Role-based alert scoping
   const myVehicle = userRole === 'driver'
-    ? vehicles.find(v => v.driver_name === userName) || null
+    ? getDriverVehicle(userName, userEmail, vehicles)
     : null;
-  const myShipment = userRole === 'user'
-    ? (shipments.find(s => s.status !== 'Delivered') || shipments[0] || null)
+
+  const clientShipmentsList = getClientShipments(userEmail, userRole, shipments, vehicles);
+  const myShipment = (userRole === 'user' || userRole === 'client')
+    ? (clientShipmentsList.find(s => s.status !== 'Delivered') || clientShipmentsList[0] || null)
     : null;
   const myClientVehicle = myShipment
     ? vehicles.find(v => v.id === myShipment.vehicle_id) || null

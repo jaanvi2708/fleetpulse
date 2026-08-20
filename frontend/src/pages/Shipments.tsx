@@ -4,6 +4,8 @@ import { useFleetStore } from '../store/fleetStore';
 import type { Shipment } from '../store/fleetStore';
 import { LiveMap } from '../components/LiveMap';
 
+import { getClientShipments, getDriverVehicle } from '../utils/roleUtils';
+
 export const Shipments: React.FC = () => {
   const token = useFleetStore((state) => state.token);
   const shipments = useFleetStore((state) => state.shipments);
@@ -11,6 +13,7 @@ export const Shipments: React.FC = () => {
   const vehicles = useFleetStore((state) => state.vehicles);
   const userRole = useFleetStore((state) => state.userRole) || 'admin';
   const userName = useFleetStore((state) => state.userName) || '';
+  const userEmail = useFleetStore((state) => state.userEmail) || '';
   
   const selectedShipmentId = useFleetStore((state) => state.selectedShipmentId);
   const selectShipment = useFleetStore((state) => state.selectShipment);
@@ -49,12 +52,17 @@ export const Shipments: React.FC = () => {
     }
   }, [selectedShipmentId, shipments]);
 
-  // Role-scoped shipments: drivers see only their vehicle's shipments
+  // Role-scoped shipments:
+  // - Client: sees ONLY their client shipment(s)
+  // - Driver: sees ONLY their assigned vehicle's shipments
+  // - Admin: sees all fleet shipments
   const myVehicle = userRole === 'driver'
-    ? vehicles.find(v => v.driver_name === userName) || null
+    ? getDriverVehicle(userName, userEmail, vehicles)
     : null;
 
-  const roleFilteredShipments = userRole === 'driver' && myVehicle
+  const roleFilteredShipments = (userRole === 'user' || userRole === 'client')
+    ? getClientShipments(userEmail, userRole, shipments, vehicles)
+    : userRole === 'driver' && myVehicle
     ? shipments.filter(s => s.vehicle_id === myVehicle.id)
     : shipments;
 

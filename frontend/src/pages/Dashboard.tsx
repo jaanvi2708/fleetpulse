@@ -16,6 +16,8 @@ import { useFleetStore } from '../store/fleetStore';
 import { StatCard } from '../components/StatCard';
 import { LiveMap } from '../components/LiveMap';
 
+import { getClientShipments, getDriverVehicle } from '../utils/roleUtils';
+
 interface DashboardProps {
   setCurrentTab: (tab: string) => void;
 }
@@ -28,6 +30,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
   const shipments = useFleetStore((state) => state.shipments);
   const userRole = useFleetStore((state) => state.userRole) || 'admin';
   const userName = useFleetStore((state) => state.userName) || '';
+  const userEmail = useFleetStore((state) => state.userEmail) || '';
   
   const setVehicles = useFleetStore((state) => state.setVehicles);
   const setAlerts = useFleetStore((state) => state.setAlerts);
@@ -108,7 +111,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
   // ── ROLE-SCOPED DATA ──────────────────────────────────────────────
   // Driver: find their own vehicle
   const myVehicle = userRole === 'driver'
-    ? vehicles.find(v => v.driver_name === userName) || null
+    ? getDriverVehicle(userName, userEmail, vehicles)
     : null;
 
   // Driver: find active shipment for their vehicle
@@ -121,9 +124,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab }) => {
     ? alerts.filter(a => (a.vehicle_id === myVehicle.id || a.vehicle_number === myVehicle.vehicle_number) && !a.resolved)
     : [];
 
-  // Client: find their shipments (first active)
-  const myClientShipment = userRole === 'user'
-    ? (shipments.find(s => s.status !== 'Delivered') || shipments[0] || null)
+  // Client: find client's assigned shipment(s)
+  const clientShipmentsList = getClientShipments(userEmail, userRole, shipments, vehicles);
+  const myClientShipment = (userRole === 'user' || userRole === 'client')
+    ? (clientShipmentsList.find(s => s.status !== 'Delivered') || clientShipmentsList[0] || null)
     : null;
 
   // Client: vehicle carrying their shipment
