@@ -5,28 +5,20 @@ import {
   Bell,
   Monitor,
   Shield,
-  Globe,
   Sliders,
   Save,
   Check,
-  Moon,
-  Zap,
-  MapPin,
   Wifi,
   WifiOff,
-  Database,
-  ChevronRight,
   Lock,
   Mail,
   Loader2,
   Truck,
   Package,
-  AlertTriangle,
   Activity,
   Clock,
   Fuel,
   LogOut,
-  RefreshCw,
   CheckSquare,
 } from 'lucide-react';
 import { useFleetStore } from '../store/fleetStore';
@@ -37,14 +29,14 @@ import { getClientShipments, getDriverVehicle } from '../utils/roleUtils';
 function lsGet(key: string, fallback: string): string {
   return localStorage.getItem(`fp_pref_${key}`) ?? fallback;
 }
-function lsSet(key: string, value: string) {
+export function lsSet(key: string, value: string) {
   localStorage.setItem(`fp_pref_${key}`, value);
 }
 function lsBool(key: string, fallback: boolean): boolean {
   const raw = localStorage.getItem(`fp_pref_${key}`);
   return raw === null ? fallback : raw === 'true';
 }
-function lsSetBool(key: string, value: boolean) {
+export function lsSetBool(key: string, value: boolean) {
   localStorage.setItem(`fp_pref_${key}`, String(value));
 }
 
@@ -178,8 +170,6 @@ export const Settings: React.FC = () => {
   /* live fleet data */
   const vehicles    = useFleetStore((s) => s.vehicles);
   const shipments   = useFleetStore((s) => s.shipments);
-  const alerts      = useFleetStore((s) => s.alerts);
-  const stats       = useFleetStore((s) => s.stats);
 
   const myClientShipments = getClientShipments(userEmail, userRole, shipments, vehicles);
   const myDriverVehicle   = getDriverVehicle(userName, userEmail, vehicles);

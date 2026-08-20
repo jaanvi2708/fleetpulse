@@ -1,4 +1,4 @@
-import type { Shipment, Vehicle, Alert } from '../store/fleetStore';
+import type { Shipment, Vehicle } from '../store/fleetStore';
 
 // Map client emails to assigned vehicle/shipment IDs for demo accounts
 export const CLIENT_VEHICLE_MAP: Record<string, number> = {
@@ -12,7 +12,7 @@ export const getClientShipments = (
   userEmail: string | null,
   userRole: string | null,
   shipments: Shipment[],
-  vehicles: Vehicle[]
+  _vehicles?: Vehicle[]
 ): Shipment[] => {
   if (userRole !== 'user' && userRole !== 'client') return shipments;
 

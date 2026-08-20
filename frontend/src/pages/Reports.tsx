@@ -7,10 +7,8 @@ import {
   RefreshCw, 
   Play, 
   CheckCircle, 
-  Clock, 
   AlertTriangle, 
   TrendingUp, 
-  User, 
   Layers, 
   FileSpreadsheet, 
   Sparkles,
@@ -19,7 +17,6 @@ import {
   Package,
   Shield,
   Fuel,
-  MapPin,
   Activity
 } from 'lucide-react';
 import { useFleetStore } from '../store/fleetStore';
@@ -38,9 +35,9 @@ export const Reports: React.FC = () => {
   const [selectedVehicle, setSelectedVehicle] = useState<string>('all');
   const [vehicleSelectOpen, setVehicleSelectOpen] = useState(false);
   const [tempVehicle, setTempVehicle] = useState<string>('all');
-  const [selectedTimeframe, setSelectedTimeframe] = useState<string>('today');
-  const [timeframeSelectOpen, setTimeframeSelectOpen] = useState(false);
-  const [tempTimeframe, setTempTimeframe] = useState<string>('today');
+  const [selectedTimeframe, _setSelectedTimeframe] = useState<string>('today');
+  const [_timeframeSelectOpen, _setTimeframeSelectOpen] = useState(false);
+  const [_tempTimeframe, _setTempTimeframe] = useState<string>('today');
   
   // Simulated report compiler states
   const [compiling, setCompiling] = useState(false);
@@ -51,7 +48,6 @@ export const Reports: React.FC = () => {
 
   const isClient = userRole === 'user' || userRole === 'client';
   const isDriver = userRole === 'driver';
-  const isAdmin = userRole === 'admin';
 
   const myClientShipments = getClientShipments(userEmail, userRole, shipments, vehicles);
   const myDriverVehicle = getDriverVehicle(userName, userEmail, vehicles);
@@ -657,7 +653,7 @@ export const Reports: React.FC = () => {
                 onClick={() => {
                   setTempVehicle(selectedVehicle);
                   setVehicleSelectOpen(!vehicleSelectOpen);
-                  setTimeframeSelectOpen(false);
+                  // Close dropdown
                 }}
                 className="w-full bg-fp-surface border border-fp-border rounded-lg px-3 py-2 text-xs font-medium text-stone-300 focus:outline-none focus:border-fp-accent cursor-pointer flex items-center justify-between select-none"
               >
