@@ -115,7 +115,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ setCurrentTab }) => {
     if (query.includes('report') || query.includes('log') || query.includes('csv') || query.includes('spreadsheet')) {
       return {
         tab: 'reports',
-        message: "Opening the **Reports** section. \n\nOperators can run queries against telemetry data, aggregate distance metrics, and download CSV/PDF spreadsheets of fleet activity."
+        message: "Opening the **Reports** section. \n\nOperators can run queries against telemetry data, aggregate distance metrics, and download official PDF reports of fleet activity."
       };
     }
     if (query.includes('setting') || query.includes('profile') || query.includes('password') || query.includes('theme')) {
