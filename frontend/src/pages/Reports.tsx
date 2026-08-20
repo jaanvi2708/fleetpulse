@@ -205,19 +205,10 @@ export const Reports: React.FC = () => {
     }
   };
 
-  // Helper to force direct PDF file download (application/pdf blob)
+  // Helper to force direct PDF file download via jsPDF save
   const downloadPdfFile = (doc: jsPDF, filename: string) => {
     const safeFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
-    const pdfOutput = doc.output('blob');
-    const pdfBlob = new Blob([pdfOutput], { type: 'application/pdf' });
-    const url = URL.createObjectURL(pdfBlob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", safeFilename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    doc.save(safeFilename);
   };
 
   const getSafetyScore = (avgSpeed: number, alertsCount: number) => {
